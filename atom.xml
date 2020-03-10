@@ -2,11 +2,12 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://Ziting-Liao.github.io</id>
     <title>Ziting Liao</title>
-    <updated>2020-03-10T03:24:30.614Z</updated>
+    <updated>2020-03-10T03:25:56.843Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://Ziting-Liao.github.io"/>
     <link rel="self" href="https://Ziting-Liao.github.io/atom.xml"/>
-    <subtitle>I am Ziting Liao, candidate from Marketing Analytics Program, Simon Business School, University of Rochester. I am seeking for a data analyst position. </subtitle>
+    <subtitle>I am Ziting Liao, candidate from Marketing Analytics Program, Simon Business School, University of Rochester.
+Now, seeking for data analyst position in United. </subtitle>
     <logo>https://Ziting-Liao.github.io/images/avatar.png</logo>
     <icon>https://Ziting-Liao.github.io/favicon.ico</icon>
     <rights>All rights reserved 2020, Ziting Liao</rights>
