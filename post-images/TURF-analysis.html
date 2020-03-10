@@ -1,0 +1,173 @@
+<TURF Analysis>
+
+<R code>
+<title>Title</title>
+</head>
+
+<body>
+
+<p>TURF Analysis:</p>
+
+<div class="chunk" id="unnamed-chunk-1"><div class="rcode"><div class="source"><pre class="knitr r"><span class="hl com">##load dataset</span>
+<span class="hl std">res</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">read.csv</span><span class="hl std">(</span><span class="hl str">&quot;Rochester/analytics design/case 2 data/survResponses.csv&quot;</span><span class="hl std">)</span>
+</pre></div>
+<div class="warning"><pre class="knitr r">## Warning in file(file, &quot;rt&quot;): cannot open file 'Rochester/analytics design/case 2
+## data/survResponses.csv': No such file or directory
+</pre></div>
+<div class="error"><pre class="knitr r">## Error in file(file, &quot;rt&quot;): cannot open the connection
+</pre></div>
+<div class="source"><pre class="knitr r"><span class="hl com">##change 0 to 2, change 1&amp;2 to 0</span>
+<span class="hl kwa">for</span> <span class="hl std">(i</span> <span class="hl kwa">in</span> <span class="hl num">15</span><span class="hl opt">:</span><span class="hl num">37</span><span class="hl std">){</span>
+    <span class="hl std">res[,i][</span><span class="hl kwd">which</span><span class="hl std">(res[,i]</span> <span class="hl opt">==</span> <span class="hl str">'2'</span><span class="hl std">)]</span> <span class="hl kwb">&lt;-</span> <span class="hl str">'a'</span>
+    <span class="hl std">res[,i][</span><span class="hl kwd">which</span><span class="hl std">(res[,i]</span> <span class="hl opt">==</span> <span class="hl str">'1'</span><span class="hl std">)]</span> <span class="hl kwb">&lt;-</span> <span class="hl str">'a'</span>
+    <span class="hl std">res[,i][</span><span class="hl kwd">which</span><span class="hl std">(res[,i]</span> <span class="hl opt">==</span> <span class="hl str">'0'</span><span class="hl std">)]</span> <span class="hl kwb">&lt;-</span> <span class="hl str">'b'</span>
+    <span class="hl std">res[,i][</span><span class="hl kwd">which</span><span class="hl std">(res[,i]</span> <span class="hl opt">==</span> <span class="hl str">'a'</span><span class="hl std">)]</span> <span class="hl kwb">&lt;-</span> <span class="hl str">'0'</span>
+    <span class="hl std">res[,i][</span><span class="hl kwd">which</span><span class="hl std">(res[,i]</span> <span class="hl opt">==</span> <span class="hl str">'b'</span><span class="hl std">)]</span> <span class="hl kwb">&lt;-</span> <span class="hl str">'2'</span>
+
+<span class="hl std">}</span>
+</pre></div>
+<div class="error"><pre class="knitr r">## Error in eval(expr, envir, enclos): object 'res' not found
+</pre></div>
+<div class="source"><pre class="knitr r"><span class="hl std">res</span>
+</pre></div>
+<div class="error"><pre class="knitr r">## Error in eval(expr, envir, enclos): object 'res' not found
+</pre></div>
+<div class="source"><pre class="knitr r"><span class="hl com">##extract flavor data</span>
+<span class="hl std">flavor</span> <span class="hl kwb">&lt;-</span> <span class="hl std">res[,</span><span class="hl num">15</span><span class="hl opt">:</span><span class="hl num">37</span><span class="hl std">]</span>
+</pre></div>
+<div class="error"><pre class="knitr r">## Error in eval(expr, envir, enclos): object 'res' not found
+</pre></div>
+<div class="source"><pre class="knitr r"><span class="hl com">##delete all incomplete data  </span>
+<span class="hl std">res</span> <span class="hl kwb">=</span> <span class="hl std">res[res</span><span class="hl opt">$</span><span class="hl std">V10</span> <span class="hl opt">==</span> <span class="hl num">1</span><span class="hl std">, ]</span>
+</pre></div>
+<div class="error"><pre class="knitr r">## Error in eval(expr, envir, enclos): object 'res' not found
+</pre></div>
+<div class="source"><pre class="knitr r"><span class="hl com">##delete the date that last more than 20 minutes or less than 1 minute</span>
+<span class="hl std">res</span><span class="hl opt">$</span><span class="hl std">time</span> <span class="hl kwb">=</span> <span class="hl kwd">difftime</span><span class="hl std">(res</span><span class="hl opt">$</span><span class="hl std">V9, res</span><span class="hl opt">$</span><span class="hl std">V8,</span> <span class="hl kwc">units</span> <span class="hl std">=</span> <span class="hl kwd">c</span><span class="hl std">(</span><span class="hl str">'mins'</span><span class="hl std">))</span>
+</pre></div>
+<div class="error"><pre class="knitr r">## Error in as.POSIXct(time1): object 'res' not found
+</pre></div>
+<div class="source"><pre class="knitr r"><span class="hl std">res</span> <span class="hl kwb">=</span> <span class="hl std">res[</span><span class="hl kwd">which</span><span class="hl std">(res</span><span class="hl opt">$</span><span class="hl std">time</span> <span class="hl opt">&lt;</span> <span class="hl num">30</span> <span class="hl opt">&amp;</span> <span class="hl std">res</span><span class="hl opt">$</span><span class="hl std">time</span> <span class="hl opt">&gt;</span> <span class="hl num">1</span><span class="hl std">), ]</span>
+</pre></div>
+<div class="error"><pre class="knitr r">## Error in eval(expr, envir, enclos): object 'res' not found
+</pre></div>
+<div class="source"><pre class="knitr r"><span class="hl com">##extract Greek data</span>
+<span class="hl std">Greek</span> <span class="hl kwb">=</span> <span class="hl std">res[res</span><span class="hl opt">$</span><span class="hl std">Q2_1</span> <span class="hl opt">&gt;=</span> <span class="hl num">50</span><span class="hl std">, ]</span>
+</pre></div>
+<div class="error"><pre class="knitr r">## Error in eval(expr, envir, enclos): object 'res' not found
+</pre></div>
+</div></div>
+
+<div class="chunk" id="unnamed-chunk-2"><div class="rcode"><div class="source"><pre class="knitr r"><span class="hl std">measReach</span> <span class="hl kwb">=</span> <span class="hl kwa">function</span><span class="hl std">(</span><span class="hl kwc">data</span><span class="hl std">){</span>
+    <span class="hl kwa">if</span><span class="hl std">(</span><span class="hl kwd">is.null</span><span class="hl std">(</span><span class="hl kwd">dim</span><span class="hl std">(data))){</span> <span class="hl com">#if data is a vector</span>
+        <span class="hl std">ret</span> <span class="hl kwb">=</span> <span class="hl kwd">sum</span><span class="hl std">(data</span><span class="hl opt">&gt;</span><span class="hl num">0</span><span class="hl std">,</span><span class="hl kwc">na.rm</span><span class="hl std">=</span><span class="hl num">TRUE</span><span class="hl std">)</span><span class="hl opt">/</span><span class="hl kwd">length</span><span class="hl std">(data)</span>
+    <span class="hl std">}</span> <span class="hl kwa">else if</span><span class="hl std">(</span><span class="hl kwd">ncol</span><span class="hl std">(data)</span><span class="hl opt">==</span><span class="hl num">1</span><span class="hl std">){</span> <span class="hl com">#if data has only one column</span>
+        <span class="hl std">ret</span> <span class="hl kwb">=</span> <span class="hl kwd">sum</span><span class="hl std">(data</span><span class="hl opt">&gt;</span><span class="hl num">0</span><span class="hl std">,</span><span class="hl kwc">na.rm</span><span class="hl std">=</span><span class="hl num">TRUE</span><span class="hl std">)</span><span class="hl opt">/</span><span class="hl kwd">length</span><span class="hl std">(data)</span>
+    <span class="hl std">}</span>
+    <span class="hl kwa">else</span> <span class="hl std">{</span> <span class="hl com">#if data has multiple columns</span>
+        <span class="hl std">ret</span> <span class="hl kwb">=</span> <span class="hl kwd">sum</span><span class="hl std">(</span><span class="hl kwd">apply</span><span class="hl std">(data</span><span class="hl opt">&gt;</span><span class="hl num">0</span><span class="hl std">,</span><span class="hl num">1</span><span class="hl std">,any),</span><span class="hl kwc">na.rm</span><span class="hl std">=</span><span class="hl num">TRUE</span><span class="hl std">)</span><span class="hl opt">/</span><span class="hl kwd">nrow</span><span class="hl std">(data)</span>
+    <span class="hl std">}</span>
+<span class="hl std">}</span>
+
+<span class="hl std">evalNext</span> <span class="hl kwb">=</span> <span class="hl kwa">function</span><span class="hl std">(</span><span class="hl kwc">nextSet</span><span class="hl std">,</span><span class="hl kwc">set</span><span class="hl std">,</span><span class="hl kwc">data</span><span class="hl std">,</span><span class="hl kwc">measure</span><span class="hl std">=measReach){</span>
+    <span class="hl std">vals</span> <span class="hl kwb">=</span> <span class="hl kwd">numeric</span><span class="hl std">(</span><span class="hl kwd">length</span><span class="hl std">(nextSet))</span> <span class="hl com">#set up storage for return value</span>
+    <span class="hl kwa">for</span><span class="hl std">(k</span> <span class="hl kwa">in</span> <span class="hl num">1</span><span class="hl opt">:</span><span class="hl kwd">length</span><span class="hl std">(nextSet)){</span><span class="hl com">#loop over the options in nextSet</span>
+        <span class="hl kwa">if</span><span class="hl std">(</span><span class="hl kwd">length</span><span class="hl std">(set)</span><span class="hl opt">==</span><span class="hl num">0</span><span class="hl std">){</span>       <span class="hl com">#if no existing options</span>
+            <span class="hl std">vals[k]</span> <span class="hl kwb">=</span> <span class="hl kwd">measure</span><span class="hl std">(data[,nextSet[k]])</span>
+        <span class="hl std">}</span> <span class="hl kwa">else</span> <span class="hl std">{</span>                    <span class="hl com">#if existing options</span>
+            <span class="hl std">vals[k]</span> <span class="hl kwb">=</span> <span class="hl kwd">measure</span><span class="hl std">(data[,</span><span class="hl kwd">c</span><span class="hl std">(set,nextSet[k])])</span>
+        <span class="hl std">}</span>
+    <span class="hl std">}</span>
+    <span class="hl std">vals</span>
+<span class="hl std">}</span>
+
+<span class="hl std">evalFull</span> <span class="hl kwb">=</span> <span class="hl kwa">function</span><span class="hl std">(</span><span class="hl kwc">fullSet</span><span class="hl std">,</span><span class="hl kwc">data</span><span class="hl std">,</span><span class="hl kwc">origSet</span><span class="hl std">=</span><span class="hl kwd">numeric</span><span class="hl std">(</span><span class="hl num">0</span><span class="hl std">),</span><span class="hl kwc">measure</span><span class="hl std">=measReach){</span>
+    <span class="hl std">curSet</span> <span class="hl kwb">=</span> <span class="hl std">origSet;</span> <span class="hl com">#the current set of included options</span>
+    <span class="hl std">remSet</span> <span class="hl kwb">=</span> <span class="hl std">fullSet[</span><span class="hl opt">!</span><span class="hl std">(fullSet</span><span class="hl opt">%in%</span><span class="hl std">origSet)];</span> <span class="hl com">#the remaining set of options to consider</span>
+    <span class="hl std">K</span> <span class="hl kwb">=</span> <span class="hl kwd">length</span><span class="hl std">(remSet)</span>
+    <span class="hl std">optVals</span> <span class="hl kwb">=</span> <span class="hl kwd">numeric</span><span class="hl std">(K);</span> <span class="hl com">#create storage for the optimal values (optVals)</span>
+    <span class="hl std">ordSet</span> <span class="hl kwb">=</span> <span class="hl kwd">numeric</span><span class="hl std">(K);</span> <span class="hl com">#create storage for ordered set</span>
+    <span class="hl kwa">for</span><span class="hl std">(i</span> <span class="hl kwa">in</span> <span class="hl num">1</span><span class="hl opt">:</span><span class="hl std">K){</span>          <span class="hl com">#loop over the remaining set consider</span>
+        <span class="hl std">tmpVals</span> <span class="hl kwb">=</span> <span class="hl kwd">evalNext</span><span class="hl std">(remSet,curSet,data,measure);</span> <span class="hl com">#calculate vector of next evaluations</span>
+        <span class="hl std">k</span> <span class="hl kwb">=</span> <span class="hl kwd">which.max</span><span class="hl std">(tmpVals)</span> <span class="hl com">#pick the option that gives max measure, note will pick first case if a tie!</span>
+        <span class="hl std">optVals[i]</span> <span class="hl kwb">=</span> <span class="hl std">tmpVals[k]</span> <span class="hl com">#add optimal value</span>
+        <span class="hl std">ordSet[i]</span> <span class="hl kwb">=</span> <span class="hl std">remSet[k]</span>   <span class="hl com">#add index of option that creates optimal value</span>
+        <span class="hl std">curSet</span> <span class="hl kwb">=</span> <span class="hl kwd">c</span><span class="hl std">(curSet,ordSet[i]);</span> <span class="hl com">#add optimal next option to current set</span>
+        <span class="hl std">remSet</span> <span class="hl kwb">=</span> <span class="hl std">remSet[</span><span class="hl opt">-</span><span class="hl std">k];</span>          <span class="hl com">#delete optimal next option from remaining set</span>
+    <span class="hl std">}</span>
+    <span class="hl com">#creaets a &quot;TURF object&quot; containing ordSet, optVals, origSet, origVal, measure, and pnames</span>
+    <span class="hl std">turf</span> <span class="hl kwb">=</span> <span class="hl kwd">list</span><span class="hl std">(</span><span class="hl kwc">ordSet</span><span class="hl std">=ordSet,</span><span class="hl kwc">optVals</span><span class="hl std">=optVals,</span><span class="hl kwc">origSet</span><span class="hl std">=origSet,</span><span class="hl kwc">origVal</span><span class="hl std">=</span><span class="hl kwd">measure</span><span class="hl std">(data[,origSet]),</span><span class="hl kwc">measure</span><span class="hl std">=measure,</span><span class="hl kwc">pnames</span><span class="hl std">=</span><span class="hl kwd">colnames</span><span class="hl std">(data))</span>
+    <span class="hl kwd">class</span><span class="hl std">(turf)</span><span class="hl kwb">=</span><span class="hl str">&quot;TURF&quot;</span> <span class="hl com">#makes the list into a TURF object so that can call plot.TURF</span>
+    <span class="hl std">turf</span>  <span class="hl com">#return turf</span>
+<span class="hl std">}</span>
+
+<span class="hl std">plot.TURF</span><span class="hl kwb">=</span><span class="hl kwa">function</span><span class="hl std">(</span><span class="hl kwc">turf</span><span class="hl std">,</span><span class="hl kwc">...</span><span class="hl std">){</span>
+    <span class="hl kwa">if</span><span class="hl std">(</span><span class="hl kwd">class</span><span class="hl std">(turf)</span><span class="hl opt">!=</span><span class="hl str">&quot;TURF&quot;</span><span class="hl std">){</span>
+        <span class="hl kwd">cat</span><span class="hl std">(</span><span class="hl str">&quot;Object not a turf.&quot;</span><span class="hl std">)</span>
+    <span class="hl std">}</span> <span class="hl kwa">else</span> <span class="hl std">{</span>
+        <span class="hl std">df</span> <span class="hl kwb">=</span> <span class="hl kwd">with</span><span class="hl std">(turf,</span><span class="hl kwd">data.frame</span><span class="hl std">(</span><span class="hl kwc">vals</span> <span class="hl std">=</span> <span class="hl kwd">c</span><span class="hl std">(origVal,optVals),</span><span class="hl kwc">titles</span><span class="hl std">=</span><span class="hl kwd">paste</span><span class="hl std">(</span><span class="hl num">0</span><span class="hl opt">:</span><span class="hl kwd">length</span><span class="hl std">(ordSet),</span><span class="hl kwd">c</span><span class="hl std">(</span><span class="hl str">&quot;Original&quot;</span><span class="hl std">,pnames[ordSet]),</span><span class="hl kwc">sep</span><span class="hl std">=</span><span class="hl str">&quot;:&quot;</span><span class="hl std">)))</span>
+        <span class="hl com">#with(turf,barplot(c(origVal,optVals),names.arg=c(&quot;Original&quot;,pnames[ordSet])))</span>
+        <span class="hl std">dodge</span> <span class="hl kwb">=</span> <span class="hl kwd">position_dodge</span><span class="hl std">(</span><span class="hl kwc">width</span><span class="hl std">=</span><span class="hl num">.75</span><span class="hl std">);</span> <span class="hl com">##to form constant dimensions positioning for all geom's</span>
+        <span class="hl std">gp</span> <span class="hl kwb">=</span> <span class="hl kwd">ggplot</span><span class="hl std">(df,</span><span class="hl kwd">aes</span><span class="hl std">(</span><span class="hl kwc">y</span><span class="hl std">=vals,</span><span class="hl kwc">x</span><span class="hl std">=titles))</span>
+        <span class="hl std">gp</span> <span class="hl opt">+</span> <span class="hl kwd">geom_bar</span><span class="hl std">(</span><span class="hl kwc">position</span><span class="hl std">=dodge,</span><span class="hl kwc">stat</span><span class="hl std">=</span><span class="hl str">&quot;identity&quot;</span><span class="hl std">,</span><span class="hl kwc">col</span><span class="hl std">=</span><span class="hl num">1</span><span class="hl std">,</span><span class="hl kwc">fill</span><span class="hl std">=</span><span class="hl num">4</span><span class="hl std">,</span><span class="hl kwc">width</span><span class="hl std">=</span><span class="hl num">.75</span><span class="hl std">)</span>
+    <span class="hl std">}</span>
+<span class="hl std">}</span>
+</pre></div>
+</div></div>
+
+<div class="chunk" id="unnamed-chunk-3"><div class="rcode"><div class="source"><pre class="knitr r"><span class="hl std">Greek2</span><span class="hl kwb">&lt;-</span><span class="hl std">Greek[</span><span class="hl opt">-</span><span class="hl kwd">which</span><span class="hl std">(</span><span class="hl kwd">apply</span><span class="hl std">(Greek[,</span><span class="hl num">15</span><span class="hl opt">:</span><span class="hl num">37</span><span class="hl std">],</span><span class="hl num">1</span><span class="hl std">,</span><span class="hl kwa">function</span><span class="hl std">(</span><span class="hl kwc">x</span><span class="hl std">)</span> <span class="hl kwd">all</span><span class="hl std">(</span><span class="hl kwd">is.na</span><span class="hl std">(x)))),]</span>
+</pre></div>
+<div class="error"><pre class="knitr r">## Error in eval(expr, envir, enclos): object 'Greek' not found
+</pre></div>
+<div class="source"><pre class="knitr r"><span class="hl com">##TURF Analysis</span>
+<span class="hl std">brandsPurch</span> <span class="hl kwb">=</span> <span class="hl std">Greek2[,</span><span class="hl num">15</span><span class="hl opt">:</span><span class="hl num">37</span><span class="hl std">]</span>
+</pre></div>
+<div class="error"><pre class="knitr r">## Error in eval(expr, envir, enclos): object 'Greek2' not found
+</pre></div>
+<div class="source"><pre class="knitr r"><span class="hl std">brandsPurch[</span><span class="hl kwd">is.na</span><span class="hl std">(brandsPurch)]</span> <span class="hl kwb">=</span> <span class="hl num">0</span>
+</pre></div>
+<div class="error"><pre class="knitr r">## Error in brandsPurch[is.na(brandsPurch)] = 0: object 'brandsPurch' not found
+</pre></div>
+<div class="source"><pre class="knitr r"><span class="hl kwd">names</span><span class="hl std">(brandsPurch)</span><span class="hl kwb">=</span><span class="hl kwd">c</span><span class="hl std">(</span><span class="hl str">&quot;Almond&quot;</span><span class="hl std">,</span> <span class="hl str">&quot;Banana&quot;</span><span class="hl std">,</span> <span class="hl str">&quot;Black Cherry&quot;</span><span class="hl std">,</span> <span class="hl str">&quot;Blueberry&quot;</span><span class="hl std">,</span> <span class="hl str">&quot;Caramel&quot;</span><span class="hl std">,</span> <span class="hl str">&quot;Chai&quot;</span><span class="hl std">,</span> <span class="hl str">&quot;Chocolate&quot;</span><span class="hl std">,</span> <span class="hl str">&quot;Cinnamon&quot;</span><span class="hl std">,</span> <span class="hl str">&quot;Coconut&quot;</span><span class="hl std">,</span> <span class="hl str">&quot;Honey&quot;</span><span class="hl std">,</span> <span class="hl str">&quot;Key Lime Pie&quot;</span><span class="hl std">,</span> <span class="hl str">&quot;Lemon&quot;</span><span class="hl std">,</span> <span class="hl str">&quot;Mango&quot;</span><span class="hl std">,</span> <span class="hl str">&quot;Mapel&quot;</span><span class="hl std">,</span> <span class="hl str">&quot;Peach&quot;</span><span class="hl std">,</span> <span class="hl str">&quot;Pineapple&quot;</span><span class="hl std">,</span> <span class="hl str">&quot;Plain&quot;</span><span class="hl std">,</span> <span class="hl str">&quot;Pomegranate&quot;</span><span class="hl std">,</span> <span class="hl str">&quot;Raspberry&quot;</span><span class="hl std">,</span> <span class="hl str">&quot;Strawberry&quot;</span><span class="hl std">,</span> <span class="hl str">&quot;StrawBan&quot;</span><span class="hl std">,</span> <span class="hl str">&quot;Vanilla&quot;</span><span class="hl std">,</span> <span class="hl str">&quot;VaniBan&quot;</span><span class="hl std">)</span>
+</pre></div>
+<div class="error"><pre class="knitr r">## Error in names(brandsPurch) = c(&quot;Almond&quot;, &quot;Banana&quot;, &quot;Black Cherry&quot;, &quot;Blueberry&quot;, : object 'brandsPurch' not found
+</pre></div>
+<div class="source"><pre class="knitr r"><span class="hl std">turf</span> <span class="hl kwb">=</span> <span class="hl kwd">evalFull</span><span class="hl std">(</span><span class="hl kwd">c</span><span class="hl std">(</span><span class="hl num">1</span><span class="hl opt">:</span><span class="hl num">23</span><span class="hl std">),brandsPurch,</span><span class="hl kwd">c</span><span class="hl std">(</span><span class="hl num">4</span><span class="hl std">,</span><span class="hl num">20</span><span class="hl std">,</span><span class="hl num">15</span><span class="hl std">,</span><span class="hl num">22</span><span class="hl std">,</span><span class="hl num">17</span><span class="hl std">,</span><span class="hl num">10</span><span class="hl std">))</span>
+</pre></div>
+<div class="error"><pre class="knitr r">## Error in measure(data[, c(set, nextSet[k])]): object 'brandsPurch' not found
+</pre></div>
+<div class="source"><pre class="knitr r"><span class="hl kwd">plot</span><span class="hl std">(turf)</span>
+</pre></div>
+<div class="error"><pre class="knitr r">## Error in plot(turf): object 'turf' not found
+</pre></div>
+<div class="source"><pre class="knitr r"><span class="hl com">## all yorgut #######</span>
+<span class="hl com">## delete all NA rows</span>
+<span class="hl std">allyogurt</span><span class="hl kwb">&lt;-</span><span class="hl std">res[</span><span class="hl opt">-</span><span class="hl kwd">which</span><span class="hl std">(</span><span class="hl kwd">apply</span><span class="hl std">(res[,</span><span class="hl num">15</span><span class="hl opt">:</span><span class="hl num">37</span><span class="hl std">],</span><span class="hl num">1</span><span class="hl std">,</span><span class="hl kwa">function</span><span class="hl std">(</span><span class="hl kwc">x</span><span class="hl std">)</span> <span class="hl kwd">all</span><span class="hl std">(</span><span class="hl kwd">is.na</span><span class="hl std">(x)))),]</span>
+</pre></div>
+<div class="error"><pre class="knitr r">## Error in eval(expr, envir, enclos): object 'res' not found
+</pre></div>
+<div class="source"><pre class="knitr r"><span class="hl com">##TURF Analysis</span>
+<span class="hl std">brandsPurch2</span> <span class="hl kwb">=</span> <span class="hl std">allyogurt[,</span><span class="hl num">15</span><span class="hl opt">:</span><span class="hl num">37</span><span class="hl std">]</span>
+</pre></div>
+<div class="error"><pre class="knitr r">## Error in eval(expr, envir, enclos): object 'allyogurt' not found
+</pre></div>
+<div class="source"><pre class="knitr r"><span class="hl std">brandsPurch2[</span><span class="hl kwd">is.na</span><span class="hl std">(brandsPurch2)]</span> <span class="hl kwb">=</span> <span class="hl num">0</span>
+</pre></div>
+<div class="error"><pre class="knitr r">## Error in brandsPurch2[is.na(brandsPurch2)] = 0: object 'brandsPurch2' not found
+</pre></div>
+<div class="source"><pre class="knitr r"><span class="hl kwd">names</span><span class="hl std">(brandsPurch2)</span><span class="hl kwb">=</span><span class="hl kwd">c</span><span class="hl std">(</span><span class="hl str">&quot;Almond&quot;</span><span class="hl std">,</span> <span class="hl str">&quot;Banana&quot;</span><span class="hl std">,</span> <span class="hl str">&quot;Black Cherry&quot;</span><span class="hl std">,</span> <span class="hl str">&quot;Blueberry&quot;</span><span class="hl std">,</span> <span class="hl str">&quot;Caramel&quot;</span><span class="hl std">,</span> <span class="hl str">&quot;Chai&quot;</span><span class="hl std">,</span> <span class="hl str">&quot;Chocolate&quot;</span><span class="hl std">,</span> <span class="hl str">&quot;Cinnamon&quot;</span><span class="hl std">,</span> <span class="hl str">&quot;Coconut&quot;</span><span class="hl std">,</span> <span class="hl str">&quot;Honey&quot;</span><span class="hl std">,</span> <span class="hl str">&quot;Key Lime Pie&quot;</span><span class="hl std">,</span> <span class="hl str">&quot;Lemon&quot;</span><span class="hl std">,</span> <span class="hl str">&quot;Mango&quot;</span><span class="hl std">,</span> <span class="hl str">&quot;Mapel&quot;</span><span class="hl std">,</span> <span class="hl str">&quot;Peach&quot;</span><span class="hl std">,</span> <span class="hl str">&quot;Pineapple&quot;</span><span class="hl std">,</span> <span class="hl str">&quot;Plain&quot;</span><span class="hl std">,</span> <span class="hl str">&quot;Pomegranate&quot;</span><span class="hl std">,</span> <span class="hl str">&quot;Raspberry&quot;</span><span class="hl std">,</span> <span class="hl str">&quot;Strawberry&quot;</span><span class="hl std">,</span> <span class="hl str">&quot;StrawBan&quot;</span><span class="hl std">,</span> <span class="hl str">&quot;Vanilla&quot;</span><span class="hl std">,</span> <span class="hl str">&quot;VaniBan&quot;</span><span class="hl std">)</span>
+</pre></div>
+<div class="error"><pre class="knitr r">## Error in names(brandsPurch2) = c(&quot;Almond&quot;, &quot;Banana&quot;, &quot;Black Cherry&quot;, &quot;Blueberry&quot;, : object 'brandsPurch2' not found
+</pre></div>
+<div class="source"><pre class="knitr r"><span class="hl std">turf2</span> <span class="hl kwb">=</span> <span class="hl kwd">evalFull</span><span class="hl std">(</span><span class="hl kwd">c</span><span class="hl std">(</span><span class="hl num">1</span><span class="hl opt">:</span><span class="hl num">23</span><span class="hl std">),brandsPurch2,</span><span class="hl kwd">c</span><span class="hl std">(</span><span class="hl num">4</span><span class="hl std">,</span><span class="hl num">20</span><span class="hl std">,</span><span class="hl num">15</span><span class="hl std">,</span><span class="hl num">22</span><span class="hl std">,</span><span class="hl num">17</span><span class="hl std">,</span><span class="hl num">10</span><span class="hl std">))</span>
+</pre></div>
+<div class="error"><pre class="knitr r">## Error in measure(data[, c(set, nextSet[k])]): object 'brandsPurch2' not found
+</pre></div>
+<div class="source"><pre class="knitr r"><span class="hl kwd">plot</span><span class="hl std">(turf2)</span>
+</pre></div>
+<div class="error"><pre class="knitr r">## Error in plot(turf2): object 'turf2' not found
+</pre></div>
+</div></div>
+
+</body>
+</html>

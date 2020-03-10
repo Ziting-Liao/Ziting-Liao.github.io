@@ -1,0 +1,415 @@
+<Causal Forest Analysis>
+
+<R code>
+<title>Title</title>
+</head>
+
+<body>
+
+<p>Causal Forest Analysis:</p>
+
+<div class="chunk" id="unnamed-chunk-1"><div class="rcode"><div class="source"><pre class="knitr r"><span class="hl kwd">rm</span><span class="hl std">(</span><span class="hl kwc">list</span><span class="hl std">=</span><span class="hl kwd">ls</span><span class="hl std">())</span>
+<span class="hl std">dir</span> <span class="hl kwb">=</span>  <span class="hl str">&quot;C:/Users/DELL/Desktop/Rochester/analytics design/case 4&quot;</span>
+<span class="hl kwd">setwd</span><span class="hl std">(dir)</span>
+<span class="hl kwd">library</span><span class="hl std">(dplyr)</span>
+</pre></div>
+<div class="message"><pre class="knitr r">## 
+## Attaching package: 'dplyr'
+</pre></div>
+<div class="message"><pre class="knitr r">## The following objects are masked from 'package:stats':
+## 
+##     filter, lag
+</pre></div>
+<div class="message"><pre class="knitr r">## The following objects are masked from 'package:base':
+## 
+##     intersect, setdiff, setequal, union
+</pre></div>
+<div class="source"><pre class="knitr r"><span class="hl kwd">library</span><span class="hl std">(tidyr)</span>
+<span class="hl kwd">library</span><span class="hl std">(data.table)</span>
+</pre></div>
+<div class="message"><pre class="knitr r">## 
+## Attaching package: 'data.table'
+</pre></div>
+<div class="message"><pre class="knitr r">## The following objects are masked from 'package:dplyr':
+## 
+##     between, first, last
+</pre></div>
+<div class="source"><pre class="knitr r"><span class="hl kwd">library</span><span class="hl std">(ggplot2)</span>
+<span class="hl kwd">library</span><span class="hl std">(grf)</span>
+<span class="hl std">d</span> <span class="hl kwb">=</span> <span class="hl kwd">read.csv</span><span class="hl std">(</span><span class="hl str">&quot;test_data_1904.csv&quot;</span><span class="hl std">)</span>
+</pre></div>
+</div></div>
+
+<p>You can also embed plots, for example:</p>
+
+<div class="chunk" id="unnamed-chunk-2"><div class="rcode"><div class="source"><pre class="knitr r"><span class="hl std">dt</span> <span class="hl kwb">=</span> <span class="hl kwd">data.table</span><span class="hl std">(d)</span>
+<span class="hl std">dagg</span> <span class="hl kwb">=</span> <span class="hl std">dt[,</span><span class="hl kwd">.</span><span class="hl std">(</span><span class="hl kwc">open</span> <span class="hl std">=</span> <span class="hl kwd">mean</span><span class="hl std">(open),</span> <span class="hl kwc">click</span><span class="hl std">=</span><span class="hl kwd">mean</span><span class="hl std">(click),</span> <span class="hl kwc">purch</span> <span class="hl std">=</span> <span class="hl kwd">mean</span><span class="hl std">(purch),</span><span class="hl kwc">seOpen</span> <span class="hl std">=</span> <span class="hl kwd">sd</span><span class="hl std">(open)</span><span class="hl opt">/</span><span class="hl kwd">sqrt</span><span class="hl std">(.N),</span> <span class="hl kwc">seClick</span><span class="hl std">=</span><span class="hl kwd">sd</span><span class="hl std">(click)</span><span class="hl opt">/</span><span class="hl kwd">sqrt</span><span class="hl std">(.N),</span> <span class="hl kwc">sePurch</span> <span class="hl std">=</span> <span class="hl kwd">sd</span><span class="hl std">(purch)</span><span class="hl opt">/</span><span class="hl kwd">sqrt</span><span class="hl std">(.N),.N),</span><span class="hl kwc">by</span> <span class="hl std">=</span> <span class="hl kwd">.</span><span class="hl std">(group)]</span>
+<span class="hl std">dagg</span>
+</pre></div>
+<div class="output"><pre class="knitr r">##    group      open     click    purch      seOpen    seClick   sePurch     N
+## 1: email 0.7957912 0.1345898 14.11913 0.002037245 0.00172474 0.2330652 39156
+## 2:  ctrl 0.0000000 0.0000000 12.77266 0.000000000 0.00000000 0.2186123 39156
+</pre></div>
+<div class="source"><pre class="knitr r"><span class="hl std">dodge</span> <span class="hl kwb">=</span> <span class="hl kwd">position_dodge</span><span class="hl std">(</span><span class="hl kwc">width</span><span class="hl std">=</span><span class="hl num">1</span><span class="hl std">)</span>
+<span class="hl kwd">ggplot</span><span class="hl std">(</span><span class="hl kwd">aes</span><span class="hl std">(</span><span class="hl kwc">x</span><span class="hl std">=group,</span><span class="hl kwc">y</span><span class="hl std">=purch,</span><span class="hl kwc">ymax</span><span class="hl std">=purch</span><span class="hl opt">+</span><span class="hl std">sePurch,</span><span class="hl kwc">ymin</span><span class="hl std">=purch</span><span class="hl opt">-</span><span class="hl std">sePurch),</span><span class="hl kwc">data</span><span class="hl std">=dagg)</span><span class="hl opt">+</span>
+    <span class="hl kwd">geom_bar</span><span class="hl std">(</span><span class="hl kwc">position</span><span class="hl std">=dodge,</span><span class="hl kwc">stat</span><span class="hl std">=</span><span class="hl str">&quot;identity&quot;</span><span class="hl std">,</span><span class="hl kwc">col</span><span class="hl std">=</span><span class="hl num">2</span><span class="hl opt">:</span><span class="hl num">3</span><span class="hl std">,</span><span class="hl kwc">fill</span><span class="hl std">=</span><span class="hl num">2</span><span class="hl opt">:</span><span class="hl num">3</span><span class="hl std">)</span> <span class="hl opt">+</span>
+    <span class="hl kwd">geom_errorbar</span><span class="hl std">(</span><span class="hl kwc">position</span><span class="hl std">=dodge)</span>
+</pre></div>
+</div><div class="rimage default"><img src="figure/unnamed-chunk-2-1.png" title="plot of chunk unnamed-chunk-2" alt="plot of chunk unnamed-chunk-2" class="plot" /></div><div class="rcode">
+<div class="source"><pre class="knitr r"><span class="hl kwd">labs</span><span class="hl std">(</span><span class="hl kwc">x</span><span class="hl std">=</span><span class="hl str">&quot;Group&quot;</span><span class="hl std">,</span><span class="hl kwc">y</span><span class="hl std">=</span><span class="hl str">&quot;Purchases&quot;</span><span class="hl std">)</span>
+</pre></div>
+<div class="output"><pre class="knitr r">## $x
+## [1] &quot;Group&quot;
+## 
+## $y
+## [1] &quot;Purchases&quot;
+## 
+## attr(,&quot;class&quot;)
+## [1] &quot;labels&quot;
+</pre></div>
+<div class="source"><pre class="knitr r"><span class="hl kwd">summary</span><span class="hl std">(</span><span class="hl kwd">lm</span><span class="hl std">(purch</span><span class="hl opt">~</span><span class="hl std">group,</span><span class="hl kwc">data</span><span class="hl std">=d))</span>
+</pre></div>
+<div class="output"><pre class="knitr r">## 
+## Call:
+## lm(formula = purch ~ group, data = d)
+## 
+## Residuals:
+##     Min      1Q  Median      3Q     Max 
+##  -14.12  -14.12  -12.77  -12.77 1798.38 
+## 
+## Coefficients:
+##             Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)  12.7727     0.2260  56.528  &lt; 2e-16 ***
+## groupemail    1.3465     0.3195   4.214 2.52e-05 ***
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## Residual standard error: 44.71 on 78310 degrees of freedom
+## Multiple R-squared:  0.0002267,	Adjusted R-squared:  0.0002139 
+## F-statistic: 17.76 on 1 and 78310 DF,  p-value: 2.515e-05
+</pre></div>
+<div class="source"><pre class="knitr r"><span class="hl std">d</span><span class="hl opt">$</span><span class="hl std">email</span> <span class="hl kwb">=</span> <span class="hl std">(d</span><span class="hl opt">$</span><span class="hl std">group</span> <span class="hl opt">!=</span> <span class="hl str">&quot;ctrl&quot;</span><span class="hl std">)</span>
+</pre></div>
+</div></div>
+
+<div class="chunk" id="unnamed-chunk-3"><div class="rcode"><div class="source"><pre class="knitr r"><span class="hl com">##recent purchase</span>
+<span class="hl kwd">hist</span><span class="hl std">(d</span><span class="hl opt">$</span><span class="hl std">last_purch,</span>
+     <span class="hl kwc">xlab</span><span class="hl std">=</span><span class="hl str">&quot;Days Since Last Purchase&quot;</span><span class="hl std">,</span> <span class="hl kwc">ylab</span><span class="hl std">=</span><span class="hl str">&quot;Customers&quot;</span><span class="hl std">,</span>
+     <span class="hl kwc">main</span><span class="hl std">=</span><span class="hl str">&quot;Histogram of Days Since Last Purchase&quot;</span><span class="hl std">)</span>
+</pre></div>
+</div><div class="rimage default"><img src="figure/unnamed-chunk-3-1.png" title="plot of chunk unnamed-chunk-3" alt="plot of chunk unnamed-chunk-3" class="plot" /></div><div class="rcode">
+<div class="source"><pre class="knitr r"><span class="hl std">d</span><span class="hl opt">$</span><span class="hl std">recentPurch</span> <span class="hl kwb">=</span> <span class="hl std">(d</span><span class="hl opt">$</span><span class="hl std">last_purch</span> <span class="hl opt">&lt;</span> <span class="hl num">60</span><span class="hl std">)</span>
+<span class="hl std">dt</span> <span class="hl kwb">=</span> <span class="hl kwd">data.table</span><span class="hl std">(d)</span>
+
+<span class="hl std">dagg</span> <span class="hl kwb">=</span> <span class="hl std">dt[,</span><span class="hl kwd">.</span><span class="hl std">(</span><span class="hl kwc">open</span> <span class="hl std">=</span> <span class="hl kwd">mean</span><span class="hl std">(open),</span> <span class="hl kwc">click</span><span class="hl std">=</span><span class="hl kwd">mean</span><span class="hl std">(click),</span> <span class="hl kwc">purch</span> <span class="hl std">=</span> <span class="hl kwd">mean</span><span class="hl std">(purch),</span><span class="hl kwc">sePurch</span> <span class="hl std">=</span> <span class="hl kwd">sd</span><span class="hl std">(purch)</span><span class="hl opt">/</span><span class="hl kwd">sqrt</span><span class="hl std">(.N),.N),</span><span class="hl kwc">by</span> <span class="hl std">=</span> <span class="hl kwd">.</span><span class="hl std">(group,recentPurch)]</span>
+<span class="hl std">dagg</span>
+</pre></div>
+<div class="output"><pre class="knitr r">##    group recentPurch      open     click     purch   sePurch     N
+## 1: email       FALSE 0.6949002 0.1207254  7.655662 0.2388168 20236
+## 2:  ctrl        TRUE 0.0000000 0.0000000 19.293426 0.3816868 18817
+## 3:  ctrl       FALSE 0.0000000 0.0000000  6.739858 0.2207073 20339
+## 4: email        TRUE 0.9036998 0.1494186 21.032178 0.4031479 18920
+</pre></div>
+<div class="source"><pre class="knitr r"><span class="hl std">dodge</span> <span class="hl kwb">=</span> <span class="hl kwd">position_dodge</span><span class="hl std">(</span><span class="hl kwc">width</span><span class="hl std">=</span><span class="hl num">1</span><span class="hl std">)</span>
+<span class="hl kwd">ggplot</span><span class="hl std">(</span><span class="hl kwd">aes</span><span class="hl std">(</span><span class="hl kwc">fill</span><span class="hl std">=group,</span><span class="hl kwc">y</span><span class="hl std">=purch,</span><span class="hl kwc">x</span><span class="hl std">=recentPurch,</span><span class="hl kwc">ymax</span><span class="hl std">=purch</span><span class="hl opt">+</span><span class="hl std">sePurch,</span><span class="hl kwc">ymin</span><span class="hl std">=purch</span><span class="hl opt">-</span><span class="hl std">sePurch),</span><span class="hl kwc">data</span><span class="hl std">=dagg)</span><span class="hl opt">+</span>
+    <span class="hl kwd">geom_bar</span><span class="hl std">(</span><span class="hl kwc">position</span><span class="hl std">=dodge,</span><span class="hl kwc">stat</span><span class="hl std">=</span><span class="hl str">&quot;identity&quot;</span><span class="hl std">)</span> <span class="hl opt">+</span>
+    <span class="hl kwd">geom_errorbar</span><span class="hl std">(</span><span class="hl kwc">position</span><span class="hl std">=dodge)</span>
+</pre></div>
+</div><div class="rimage default"><img src="figure/unnamed-chunk-3-2.png" title="plot of chunk unnamed-chunk-3" alt="plot of chunk unnamed-chunk-3" class="plot" /></div><div class="rcode">
+<div class="source"><pre class="knitr r"><span class="hl kwd">labs</span><span class="hl std">(</span><span class="hl kwc">x</span><span class="hl std">=</span><span class="hl str">&quot;Group&quot;</span><span class="hl std">,</span><span class="hl kwc">y</span><span class="hl std">=</span><span class="hl str">&quot;Purchases&quot;</span><span class="hl std">)</span>
+</pre></div>
+<div class="output"><pre class="knitr r">## $x
+## [1] &quot;Group&quot;
+## 
+## $y
+## [1] &quot;Purchases&quot;
+## 
+## attr(,&quot;class&quot;)
+## [1] &quot;labels&quot;
+</pre></div>
+<div class="source"><pre class="knitr r"><span class="hl com">##past-purchase</span>
+<span class="hl kwd">hist</span><span class="hl std">(d</span><span class="hl opt">$</span><span class="hl std">past_purch,</span>
+     <span class="hl kwc">xlab</span><span class="hl std">=</span><span class="hl str">&quot;Past Purchase&quot;</span><span class="hl std">,</span> <span class="hl kwc">ylab</span><span class="hl std">=</span><span class="hl str">&quot;Customers&quot;</span><span class="hl std">,</span>
+     <span class="hl kwc">main</span><span class="hl std">=</span><span class="hl str">&quot;Histogram of how much the customer avg spend in past visits&quot;</span><span class="hl std">)</span>
+</pre></div>
+</div><div class="rimage default"><img src="figure/unnamed-chunk-3-3.png" title="plot of chunk unnamed-chunk-3" alt="plot of chunk unnamed-chunk-3" class="plot" /></div><div class="rcode">
+<div class="source"><pre class="knitr r"><span class="hl std">d</span><span class="hl opt">$</span><span class="hl std">buysomething</span> <span class="hl kwb">=</span> <span class="hl std">(d</span><span class="hl opt">$</span><span class="hl std">past_purch</span> <span class="hl opt">&gt;</span> <span class="hl num">0</span><span class="hl std">)</span>
+<span class="hl std">dt</span> <span class="hl kwb">=</span> <span class="hl kwd">data.table</span><span class="hl std">(d)</span>
+
+<span class="hl std">dagg</span> <span class="hl kwb">=</span> <span class="hl std">dt[,</span><span class="hl kwd">.</span><span class="hl std">(</span><span class="hl kwc">open</span> <span class="hl std">=</span> <span class="hl kwd">mean</span><span class="hl std">(open),</span> <span class="hl kwc">click</span><span class="hl std">=</span><span class="hl kwd">mean</span><span class="hl std">(click),</span> <span class="hl kwc">purch</span> <span class="hl std">=</span> <span class="hl kwd">mean</span><span class="hl std">(purch),</span><span class="hl kwc">sePurch</span> <span class="hl std">=</span> <span class="hl kwd">sd</span><span class="hl std">(purch)</span><span class="hl opt">/</span><span class="hl kwd">sqrt</span><span class="hl std">(.N),.N),</span><span class="hl kwc">by</span> <span class="hl std">=</span> <span class="hl kwd">.</span><span class="hl std">(group,buysomething)]</span>
+<span class="hl std">dagg</span>
+</pre></div>
+<div class="output"><pre class="knitr r">##    group buysomething      open      click     purch   sePurch     N
+## 1: email        FALSE 0.6251327 0.07405895  7.956698 0.3182665 12247
+## 2:  ctrl         TRUE 0.0000000 0.00000000 15.340356 0.2891792 26703
+## 3: email         TRUE 0.8734624 0.16213906 16.923821 0.3051248 26909
+## 4:  ctrl        FALSE 0.0000000 0.00000000  7.266751 0.2905619 12453
+</pre></div>
+<div class="source"><pre class="knitr r"><span class="hl std">dodge</span> <span class="hl kwb">=</span> <span class="hl kwd">position_dodge</span><span class="hl std">(</span><span class="hl kwc">width</span><span class="hl std">=</span><span class="hl num">1</span><span class="hl std">)</span>
+<span class="hl kwd">ggplot</span><span class="hl std">(</span><span class="hl kwd">aes</span><span class="hl std">(</span><span class="hl kwc">fill</span><span class="hl std">=group,</span><span class="hl kwc">y</span><span class="hl std">=purch,</span><span class="hl kwc">x</span><span class="hl std">=buysomething,</span><span class="hl kwc">ymax</span><span class="hl std">=purch</span><span class="hl opt">+</span><span class="hl std">sePurch,</span><span class="hl kwc">ymin</span><span class="hl std">=purch</span><span class="hl opt">-</span><span class="hl std">sePurch),</span><span class="hl kwc">data</span><span class="hl std">=dagg)</span><span class="hl opt">+</span>
+    <span class="hl kwd">geom_bar</span><span class="hl std">(</span><span class="hl kwc">position</span><span class="hl std">=dodge,</span><span class="hl kwc">stat</span><span class="hl std">=</span><span class="hl str">&quot;identity&quot;</span><span class="hl std">)</span> <span class="hl opt">+</span>
+    <span class="hl kwd">geom_errorbar</span><span class="hl std">(</span><span class="hl kwc">position</span><span class="hl std">=dodge)</span>
+</pre></div>
+</div><div class="rimage default"><img src="figure/unnamed-chunk-3-4.png" title="plot of chunk unnamed-chunk-3" alt="plot of chunk unnamed-chunk-3" class="plot" /></div><div class="rcode">
+<div class="source"><pre class="knitr r"><span class="hl kwd">labs</span><span class="hl std">(</span><span class="hl kwc">x</span><span class="hl std">=</span><span class="hl str">&quot;Group&quot;</span><span class="hl std">,</span><span class="hl kwc">y</span><span class="hl std">=</span><span class="hl str">&quot;Purchases&quot;</span><span class="hl std">)</span>
+</pre></div>
+<div class="output"><pre class="knitr r">## $x
+## [1] &quot;Group&quot;
+## 
+## $y
+## [1] &quot;Purchases&quot;
+## 
+## attr(,&quot;class&quot;)
+## [1] &quot;labels&quot;
+</pre></div>
+<div class="source"><pre class="knitr r"><span class="hl com">##frequent visitors</span>
+<span class="hl kwd">hist</span><span class="hl std">(d</span><span class="hl opt">$</span><span class="hl std">visits,</span>
+     <span class="hl kwc">xlab</span><span class="hl std">=</span><span class="hl str">&quot;Past Purchase&quot;</span><span class="hl std">,</span> <span class="hl kwc">ylab</span><span class="hl std">=</span><span class="hl str">&quot;Customers&quot;</span><span class="hl std">,</span>
+     <span class="hl kwc">main</span><span class="hl std">=</span><span class="hl str">&quot;Histogram of how much the customer avg spend in past visits&quot;</span><span class="hl std">)</span>
+</pre></div>
+</div><div class="rimage default"><img src="figure/unnamed-chunk-3-5.png" title="plot of chunk unnamed-chunk-3" alt="plot of chunk unnamed-chunk-3" class="plot" /></div><div class="rcode">
+<div class="source"><pre class="knitr r"><span class="hl std">d</span><span class="hl opt">$</span><span class="hl std">frequentvisitor</span> <span class="hl kwb">=</span> <span class="hl std">(d</span><span class="hl opt">$</span><span class="hl std">visits</span> <span class="hl opt">&gt;</span> <span class="hl num">5</span><span class="hl std">)</span>
+<span class="hl std">dt</span> <span class="hl kwb">=</span> <span class="hl kwd">data.table</span><span class="hl std">(d)</span>
+
+<span class="hl std">dagg</span> <span class="hl kwb">=</span> <span class="hl std">dt[,</span><span class="hl kwd">.</span><span class="hl std">(</span><span class="hl kwc">open</span> <span class="hl std">=</span> <span class="hl kwd">mean</span><span class="hl std">(open),</span> <span class="hl kwc">click</span><span class="hl std">=</span><span class="hl kwd">mean</span><span class="hl std">(click),</span> <span class="hl kwc">purch</span> <span class="hl std">=</span> <span class="hl kwd">mean</span><span class="hl std">(purch),</span><span class="hl kwc">sePurch</span> <span class="hl std">=</span> <span class="hl kwd">sd</span><span class="hl std">(purch)</span><span class="hl opt">/</span><span class="hl kwd">sqrt</span><span class="hl std">(.N),.N),</span><span class="hl kwc">by</span> <span class="hl std">=</span> <span class="hl kwd">.</span><span class="hl std">(group,frequentvisitor)]</span>
+<span class="hl std">dagg</span>
+</pre></div>
+<div class="output"><pre class="knitr r">##    group frequentvisitor      open     click    purch   sePurch     N
+## 1: email            TRUE 0.8272408 0.1442502 16.46249 0.3592396 18766
+## 2:  ctrl            TRUE 0.0000000 0.0000000 15.29180 0.3371940 18714
+## 3:  ctrl           FALSE 0.0000000 0.0000000 10.46647 0.2819887 20442
+## 4: email           FALSE 0.7668465 0.1256989 11.96242 0.3008845 20390
+</pre></div>
+<div class="source"><pre class="knitr r"><span class="hl std">dodge</span> <span class="hl kwb">=</span> <span class="hl kwd">position_dodge</span><span class="hl std">(</span><span class="hl kwc">width</span><span class="hl std">=</span><span class="hl num">1</span><span class="hl std">);</span> <span class="hl com">##to form constant dimensions</span>
+<span class="hl kwd">ggplot</span><span class="hl std">(</span><span class="hl kwd">aes</span><span class="hl std">(</span><span class="hl kwc">fill</span><span class="hl std">=group,</span><span class="hl kwc">y</span><span class="hl std">=purch,</span><span class="hl kwc">x</span><span class="hl std">=frequentvisitor,</span><span class="hl kwc">ymax</span><span class="hl std">=purch</span><span class="hl opt">+</span><span class="hl std">sePurch,</span><span class="hl kwc">ymin</span><span class="hl std">=purch</span><span class="hl opt">-</span><span class="hl std">sePurch),</span><span class="hl kwc">data</span><span class="hl std">=dagg)</span><span class="hl opt">+</span>
+    <span class="hl kwd">geom_bar</span><span class="hl std">(</span><span class="hl kwc">position</span><span class="hl std">=dodge,</span><span class="hl kwc">stat</span><span class="hl std">=</span><span class="hl str">&quot;identity&quot;</span><span class="hl std">)</span> <span class="hl opt">+</span>
+    <span class="hl kwd">geom_errorbar</span><span class="hl std">(</span><span class="hl kwc">position</span><span class="hl std">=dodge)</span>
+</pre></div>
+</div><div class="rimage default"><img src="figure/unnamed-chunk-3-6.png" title="plot of chunk unnamed-chunk-3" alt="plot of chunk unnamed-chunk-3" class="plot" /></div><div class="rcode">
+<div class="source"><pre class="knitr r"><span class="hl kwd">labs</span><span class="hl std">(</span><span class="hl kwc">x</span><span class="hl std">=</span><span class="hl str">&quot;Group&quot;</span><span class="hl std">,</span><span class="hl kwc">y</span><span class="hl std">=</span><span class="hl str">&quot;Purchases&quot;</span><span class="hl std">)</span>
+</pre></div>
+<div class="output"><pre class="knitr r">## $x
+## [1] &quot;Group&quot;
+## 
+## $y
+## [1] &quot;Purchases&quot;
+## 
+## attr(,&quot;class&quot;)
+## [1] &quot;labels&quot;
+</pre></div>
+<div class="source"><pre class="knitr r"><span class="hl com">##interaction test</span>
+<span class="hl kwd">summary</span><span class="hl std">(</span><span class="hl kwd">lm</span><span class="hl std">(purch</span><span class="hl opt">~</span><span class="hl std">recentPurch</span><span class="hl opt">+</span><span class="hl std">group</span><span class="hl opt">:</span><span class="hl std">recentPurch,</span> <span class="hl kwc">data</span> <span class="hl std">= d))</span>
+</pre></div>
+<div class="output"><pre class="knitr r">## 
+## Call:
+## lm(formula = purch ~ recentPurch + group:recentPurch, data = d)
+## 
+## Residuals:
+##     Min      1Q  Median      3Q     Max 
+##  -21.03  -19.29   -7.66   -6.74 1791.47 
+## 
+## Coefficients:
+##                             Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)                   6.7399     0.3102  21.727  &lt; 2e-16 ***
+## recentPurchTRUE              12.5536     0.4475  28.054  &lt; 2e-16 ***
+## recentPurchFALSE:groupemail   0.9158     0.4393   2.085 0.037081 *  
+## recentPurchTRUE:groupemail    1.7388     0.4555   3.817 0.000135 ***
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## Residual standard error: 44.24 on 78308 degrees of freedom
+## Multiple R-squared:  0.02124,	Adjusted R-squared:  0.0212 
+## F-statistic: 566.4 on 3 and 78308 DF,  p-value: &lt; 2.2e-16
+</pre></div>
+<div class="source"><pre class="knitr r"><span class="hl kwd">summary</span><span class="hl std">(</span><span class="hl kwd">lm</span><span class="hl std">(purch</span><span class="hl opt">~</span><span class="hl std">buysomething</span><span class="hl opt">+</span><span class="hl std">group</span><span class="hl opt">:</span><span class="hl std">buysomething,</span> <span class="hl kwc">data</span> <span class="hl std">= d))</span>
+</pre></div>
+<div class="output"><pre class="knitr r">## 
+## Call:
+## lm(formula = purch ~ buysomething + group:buysomething, data = d)
+## 
+## Residuals:
+##     Min      1Q  Median      3Q     Max 
+##  -16.92  -15.34  -15.34   -7.27 1795.58 
+## 
+## Coefficients:
+##                              Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)                    7.2668     0.3991  18.208  &lt; 2e-16 ***
+## buysomethingTRUE               8.0736     0.4833  16.706  &lt; 2e-16 ***
+## buysomethingFALSE:groupemail   0.6899     0.5668   1.217    0.223    
+## buysomethingTRUE:groupemail    1.5835     0.3847   4.116 3.86e-05 ***
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## Residual standard error: 44.54 on 78308 degrees of freedom
+## Multiple R-squared:  0.008084,	Adjusted R-squared:  0.008046 
+## F-statistic: 212.7 on 3 and 78308 DF,  p-value: &lt; 2.2e-16
+</pre></div>
+<div class="source"><pre class="knitr r"><span class="hl kwd">summary</span><span class="hl std">(</span><span class="hl kwd">lm</span><span class="hl std">(purch</span><span class="hl opt">~</span><span class="hl std">frequentvisitor</span><span class="hl opt">+</span><span class="hl std">group</span><span class="hl opt">:</span><span class="hl std">frequentvisitor,</span> <span class="hl kwc">data</span> <span class="hl std">= d))</span>
+</pre></div>
+<div class="output"><pre class="knitr r">## 
+## Call:
+## lm(formula = purch ~ frequentvisitor + group:frequentvisitor, 
+##     data = d)
+## 
+## Residuals:
+##     Min      1Q  Median      3Q     Max 
+##  -16.46  -15.29  -11.96  -10.47 1796.04 
+## 
+## Coefficients:
+##                                 Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)                      10.4665     0.3123  33.514  &lt; 2e-16 ***
+## frequentvisitorTRUE               4.8253     0.4517  10.682  &lt; 2e-16 ***
+## frequentvisitorFALSE:groupemail   1.4960     0.4419   3.385 0.000712 ***
+## frequentvisitorTRUE:groupemail    1.1707     0.4613   2.538 0.011154 *  
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## Residual standard error: 44.65 on 78308 degrees of freedom
+## Multiple R-squared:  0.002943,	Adjusted R-squared:  0.002905 
+## F-statistic: 77.05 on 3 and 78308 DF,  p-value: &lt; 2.2e-16
+</pre></div>
+<div class="source"><pre class="knitr r"><span class="hl std">d</span><span class="hl opt">$</span><span class="hl std">profit</span> <span class="hl kwb">=</span> <span class="hl std">d</span><span class="hl opt">$</span><span class="hl std">purch</span><span class="hl opt">*</span><span class="hl num">0.3</span><span class="hl opt">-</span><span class="hl num">0.1</span>
+
+<span class="hl com">##cluster</span>
+<span class="hl std">seg1</span> <span class="hl kwb">=</span> <span class="hl std">d[d</span><span class="hl opt">$</span><span class="hl std">recentPurch</span> <span class="hl opt">==</span> <span class="hl num">TRUE</span> <span class="hl opt">&amp;</span> <span class="hl std">d</span><span class="hl opt">$</span><span class="hl std">visits</span> <span class="hl opt">&gt;</span><span class="hl num">5</span> <span class="hl opt">&amp;</span> <span class="hl std">d</span><span class="hl opt">$</span><span class="hl std">buysomething</span> <span class="hl opt">==</span> <span class="hl num">TRUE</span><span class="hl std">, ]</span>
+<span class="hl std">seg1</span><span class="hl opt">$</span><span class="hl std">segmentation</span> <span class="hl kwb">=</span> <span class="hl num">1</span>
+<span class="hl std">seg2</span> <span class="hl kwb">=</span> <span class="hl std">d[d</span><span class="hl opt">$</span><span class="hl std">recentPurch</span> <span class="hl opt">==</span><span class="hl num">FALSE</span> <span class="hl opt">&amp;</span> <span class="hl std">d</span><span class="hl opt">$</span><span class="hl std">visits</span> <span class="hl opt">&gt;</span><span class="hl num">5</span> <span class="hl opt">&amp;</span> <span class="hl std">d</span><span class="hl opt">$</span><span class="hl std">buysomething</span> <span class="hl opt">==</span> <span class="hl num">TRUE</span><span class="hl std">, ]</span>
+<span class="hl std">seg2</span><span class="hl opt">$</span><span class="hl std">segmentation</span> <span class="hl kwb">=</span> <span class="hl num">2</span>
+<span class="hl std">seg3</span> <span class="hl kwb">=</span> <span class="hl std">d[d</span><span class="hl opt">$</span><span class="hl std">recentPurch</span> <span class="hl opt">==</span> <span class="hl num">TRUE</span> <span class="hl opt">&amp;</span> <span class="hl std">d</span><span class="hl opt">$</span><span class="hl std">visits</span> <span class="hl opt">&lt;=</span><span class="hl num">5</span> <span class="hl opt">&amp;</span> <span class="hl std">d</span><span class="hl opt">$</span><span class="hl std">buysomething</span> <span class="hl opt">==</span> <span class="hl num">TRUE</span><span class="hl std">, ]</span>
+<span class="hl std">seg3</span><span class="hl opt">$</span><span class="hl std">segmentation</span> <span class="hl kwb">=</span> <span class="hl num">3</span>
+<span class="hl std">seg4</span> <span class="hl kwb">=</span> <span class="hl std">d[d</span><span class="hl opt">$</span><span class="hl std">recentPurch</span> <span class="hl opt">==</span> <span class="hl num">FALSE</span> <span class="hl opt">&amp;</span> <span class="hl std">d</span><span class="hl opt">$</span><span class="hl std">visits</span> <span class="hl opt">&lt;=</span><span class="hl num">5</span> <span class="hl opt">&amp;</span> <span class="hl std">d</span><span class="hl opt">$</span><span class="hl std">buysomething</span> <span class="hl opt">==</span> <span class="hl num">TRUE</span><span class="hl std">,]</span>
+<span class="hl std">seg4</span><span class="hl opt">$</span><span class="hl std">segmentation</span> <span class="hl kwb">=</span> <span class="hl num">4</span>
+<span class="hl std">seg5</span> <span class="hl kwb">=</span> <span class="hl std">d[d</span><span class="hl opt">$</span><span class="hl std">recentPurch</span> <span class="hl opt">==</span> <span class="hl num">TRUE</span> <span class="hl opt">&amp;</span> <span class="hl std">d</span><span class="hl opt">$</span><span class="hl std">visits</span> <span class="hl opt">&gt;</span><span class="hl num">5</span> <span class="hl opt">&amp;</span> <span class="hl std">d</span><span class="hl opt">$</span><span class="hl std">buysomething</span> <span class="hl opt">==</span><span class="hl num">FALSE</span><span class="hl std">, ]</span>
+<span class="hl std">seg5</span><span class="hl opt">$</span><span class="hl std">segmentation</span> <span class="hl kwb">=</span> <span class="hl num">5</span>
+<span class="hl std">seg6</span> <span class="hl kwb">=</span> <span class="hl std">d[d</span><span class="hl opt">$</span><span class="hl std">recentPurch</span> <span class="hl opt">==</span><span class="hl num">FALSE</span> <span class="hl opt">&amp;</span> <span class="hl std">d</span><span class="hl opt">$</span><span class="hl std">visits</span> <span class="hl opt">&gt;</span><span class="hl num">5</span> <span class="hl opt">&amp;</span> <span class="hl std">d</span><span class="hl opt">$</span><span class="hl std">buysomething</span> <span class="hl opt">==</span> <span class="hl num">FALSE</span><span class="hl std">, ]</span>
+<span class="hl std">seg6</span><span class="hl opt">$</span><span class="hl std">segmentation</span> <span class="hl kwb">=</span> <span class="hl num">6</span>
+<span class="hl std">seg7</span> <span class="hl kwb">=</span> <span class="hl std">d[d</span><span class="hl opt">$</span><span class="hl std">recentPurch</span> <span class="hl opt">==</span> <span class="hl num">TRUE</span> <span class="hl opt">&amp;</span> <span class="hl std">d</span><span class="hl opt">$</span><span class="hl std">visits</span> <span class="hl opt">&lt;=</span><span class="hl num">5</span> <span class="hl opt">&amp;</span> <span class="hl std">d</span><span class="hl opt">$</span><span class="hl std">buysomething</span> <span class="hl opt">==</span> <span class="hl num">FALSE</span><span class="hl std">, ]</span>
+<span class="hl std">seg7</span><span class="hl opt">$</span><span class="hl std">segmentation</span> <span class="hl kwb">=</span> <span class="hl num">7</span>
+<span class="hl std">seg8</span> <span class="hl kwb">=</span> <span class="hl std">d[d</span><span class="hl opt">$</span><span class="hl std">recentPurch</span> <span class="hl opt">==</span> <span class="hl num">FALSE</span> <span class="hl opt">&amp;</span> <span class="hl std">d</span><span class="hl opt">$</span><span class="hl std">visits</span> <span class="hl opt">&lt;=</span><span class="hl num">5</span> <span class="hl opt">&amp;</span> <span class="hl std">d</span><span class="hl opt">$</span><span class="hl std">buysomething</span> <span class="hl opt">==</span> <span class="hl num">FALSE</span><span class="hl std">,]</span>
+<span class="hl std">seg8</span><span class="hl opt">$</span><span class="hl std">segmentation</span> <span class="hl kwb">=</span> <span class="hl num">8</span>
+<span class="hl std">df</span> <span class="hl kwb">=</span> <span class="hl kwd">rbind</span><span class="hl std">(seg1,seg2,seg3,seg4,seg5,seg6,seg7,seg8)</span>
+
+<span class="hl kwd">tapply</span><span class="hl std">(seg1</span><span class="hl opt">$</span><span class="hl std">profit, seg1</span><span class="hl opt">$</span><span class="hl std">group, sum)</span>
+</pre></div>
+<div class="output"><pre class="knitr r">##     ctrl    email 
+## 50548.45 54696.16
+</pre></div>
+<div class="source"><pre class="knitr r"><span class="hl kwd">tapply</span><span class="hl std">(seg2</span><span class="hl opt">$</span><span class="hl std">profit, seg2</span><span class="hl opt">$</span><span class="hl std">group, sum)</span>
+</pre></div>
+<div class="output"><pre class="knitr r">##     ctrl    email 
+## 23025.44 25501.77
+</pre></div>
+<div class="source"><pre class="knitr r"><span class="hl kwd">tapply</span><span class="hl std">(seg3</span><span class="hl opt">$</span><span class="hl std">profit, seg3</span><span class="hl opt">$</span><span class="hl std">group, sum)</span>
+</pre></div>
+<div class="output"><pre class="knitr r">##     ctrl    email 
+## 35059.02 40127.34
+</pre></div>
+<div class="source"><pre class="knitr r"><span class="hl kwd">tapply</span><span class="hl std">(seg4</span><span class="hl opt">$</span><span class="hl std">profit, seg4</span><span class="hl opt">$</span><span class="hl std">group, sum)</span>
+</pre></div>
+<div class="output"><pre class="knitr r">##     ctrl    email 
+## 11586.86 13604.75
+</pre></div>
+<div class="source"><pre class="knitr r"><span class="hl kwd">tapply</span><span class="hl std">(seg5</span><span class="hl opt">$</span><span class="hl std">profit, seg5</span><span class="hl opt">$</span><span class="hl std">group, sum)</span>
+</pre></div>
+<div class="output"><pre class="knitr r">##     ctrl    email 
+## 8353.520 8273.553
+</pre></div>
+<div class="source"><pre class="knitr r"><span class="hl kwd">tapply</span><span class="hl std">(seg6</span><span class="hl opt">$</span><span class="hl std">profit, seg6</span><span class="hl opt">$</span><span class="hl std">group, sum)</span>
+</pre></div>
+<div class="output"><pre class="knitr r">##     ctrl    email 
+## 2052.446 2332.428
+</pre></div>
+<div class="source"><pre class="knitr r"><span class="hl kwd">tapply</span><span class="hl std">(seg7</span><span class="hl opt">$</span><span class="hl std">profit, seg7</span><span class="hl opt">$</span><span class="hl std">group, sum)</span>
+</pre></div>
+<div class="output"><pre class="knitr r">##     ctrl    email 
+## 13070.63 14389.58
+</pre></div>
+<div class="source"><pre class="knitr r"><span class="hl kwd">tapply</span><span class="hl std">(seg8</span><span class="hl opt">$</span><span class="hl std">profit, seg8</span><span class="hl opt">$</span><span class="hl std">group, sum)</span>
+</pre></div>
+<div class="output"><pre class="knitr r">##     ctrl    email 
+## 2425.956 3013.439
+</pre></div>
+</div></div>
+##causal forest
+<div class="chunk" id="unnamed-chunk-4"><div class="rcode"><div class="source"><pre class="knitr r"><span class="hl std">cf_size</span> <span class="hl kwb">&lt;-</span> <span class="hl num">10000</span>
+<span class="hl std">cf_set</span> <span class="hl kwb">=</span> <span class="hl kwd">sample</span><span class="hl std">(</span><span class="hl kwd">nrow</span><span class="hl std">(d),cf_size)</span>
+<span class="hl std">treat</span> <span class="hl kwb">&lt;-</span> <span class="hl std">d</span><span class="hl opt">$</span><span class="hl std">email[cf_set]</span>
+<span class="hl std">response</span> <span class="hl kwb">&lt;-</span> <span class="hl std">d</span><span class="hl opt">$</span><span class="hl std">purch[cf_set]</span>
+<span class="hl kwd">colnames</span><span class="hl std">(d)</span>
+</pre></div>
+<div class="output"><pre class="knitr r">##  [1] &quot;user_id&quot;         &quot;cpgn_id&quot;         &quot;group&quot;           &quot;open&quot;           
+##  [5] &quot;click&quot;           &quot;purch&quot;           &quot;chard&quot;           &quot;sav_blanc&quot;      
+##  [9] &quot;syrah&quot;           &quot;cab&quot;             &quot;past_purch&quot;      &quot;last_purch&quot;     
+## [13] &quot;visits&quot;          &quot;email&quot;           &quot;recentPurch&quot;     &quot;buysomething&quot;   
+## [17] &quot;frequentvisitor&quot; &quot;profit&quot;
+</pre></div>
+<div class="source"><pre class="knitr r"><span class="hl std">baseline</span> <span class="hl kwb">&lt;-</span> <span class="hl std">d[cf_set,</span> <span class="hl kwd">c</span><span class="hl std">(</span><span class="hl str">&quot;last_purch&quot;</span><span class="hl std">,</span> <span class="hl str">&quot;past_purch&quot;</span><span class="hl std">,</span><span class="hl str">&quot;visits&quot;</span><span class="hl std">,</span> <span class="hl str">&quot;chard&quot;</span><span class="hl std">,</span> <span class="hl str">&quot;sav_blanc&quot;</span><span class="hl std">,</span> <span class="hl str">&quot;syrah&quot;</span><span class="hl std">,</span> <span class="hl str">&quot;cab&quot;</span><span class="hl std">)]</span>
+<span class="hl std">cf</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">causal_forest</span><span class="hl std">(baseline, response, treat)</span>
+<span class="hl kwd">print</span><span class="hl std">(cf)</span>
+</pre></div>
+<div class="output"><pre class="knitr r">## GRF forest object of type causal_forest 
+## Number of trees: 2000 
+## Number of training samples: 10000 
+## Variable importance: 
+##     1     2     3     4     5     6     7 
+## 0.177 0.166 0.060 0.310 0.197 0.032 0.058
+</pre></div>
+<div class="source"><pre class="knitr r"><span class="hl kwd">average_treatment_effect</span><span class="hl std">(cf,</span> <span class="hl kwc">method</span><span class="hl std">=</span><span class="hl str">&quot;AIPW&quot;</span><span class="hl std">)</span>
+</pre></div>
+<div class="output"><pre class="knitr r">##  estimate   std.err 
+## 1.1047004 0.9991365
+</pre></div>
+<div class="source"><pre class="knitr r"><span class="hl std">new_cust</span> <span class="hl kwb">=</span> <span class="hl std">d[,</span><span class="hl kwd">c</span><span class="hl std">(</span><span class="hl str">&quot;last_purch&quot;</span><span class="hl std">,</span> <span class="hl str">&quot;past_purch&quot;</span><span class="hl std">,</span><span class="hl str">&quot;visits&quot;</span><span class="hl std">,</span> <span class="hl str">&quot;chard&quot;</span><span class="hl std">,</span> <span class="hl str">&quot;sav_blanc&quot;</span><span class="hl std">,</span> <span class="hl str">&quot;syrah&quot;</span><span class="hl std">,</span> <span class="hl str">&quot;cab&quot;</span><span class="hl std">)]</span>
+<span class="hl std">pre</span> <span class="hl kwb">=</span> <span class="hl kwd">predict</span><span class="hl std">(cf, new_cust,</span> <span class="hl kwc">estimate.variance</span> <span class="hl std">=</span> <span class="hl num">TRUE</span><span class="hl std">)</span>
+
+<span class="hl kwd">hist</span><span class="hl std">(</span><span class="hl kwd">predict</span><span class="hl std">(cf)</span><span class="hl opt">$</span><span class="hl std">predictions,</span>
+     <span class="hl kwc">main</span><span class="hl std">=</span><span class="hl str">&quot;Histogram of Purchase Lift&quot;</span><span class="hl std">,</span>
+     <span class="hl kwc">xlab</span><span class="hl std">=</span><span class="hl str">&quot;Purchase Lift for Email&quot;</span><span class="hl std">,</span> <span class="hl kwc">ylab</span><span class="hl std">=</span><span class="hl str">&quot;Customers&quot;</span><span class="hl std">)</span>
+</pre></div>
+</div><div class="rimage default"><img src="figure/unnamed-chunk-4-1.png" title="plot of chunk unnamed-chunk-4" alt="plot of chunk unnamed-chunk-4" class="plot" /></div><div class="rcode">
+<div class="source"><pre class="knitr r"><span class="hl std">new_cust</span><span class="hl opt">$</span><span class="hl std">score</span> <span class="hl kwb">=</span> <span class="hl std">pre</span><span class="hl opt">$</span><span class="hl std">predictions</span><span class="hl opt">*</span><span class="hl num">0.3</span><span class="hl opt">-</span><span class="hl num">0.1</span>
+<span class="hl std">new_cust</span><span class="hl opt">$</span><span class="hl std">target</span> <span class="hl kwb">=</span> <span class="hl std">d</span><span class="hl opt">$</span><span class="hl std">score</span><span class="hl opt">&gt;</span><span class="hl num">0</span>
+</pre></div>
+<div class="error"><pre class="knitr r">## Error in `$&lt;-.data.frame`(`*tmp*`, target, value = logical(0)): replacement has 0 rows, data has 78312
+</pre></div>
+<div class="source"><pre class="knitr r"><span class="hl kwd">summary</span><span class="hl std">(new_cust[new_cust</span><span class="hl opt">$</span><span class="hl std">target</span> <span class="hl opt">==</span> <span class="hl num">TRUE</span><span class="hl std">,])</span>
+</pre></div>
+<div class="output"><pre class="knitr r">##    last_purch    past_purch      visits        chard       sav_blanc  
+##  Min.   : NA   Min.   : NA   Min.   : NA   Min.   : NA   Min.   : NA  
+##  1st Qu.: NA   1st Qu.: NA   1st Qu.: NA   1st Qu.: NA   1st Qu.: NA  
+##  Median : NA   Median : NA   Median : NA   Median : NA   Median : NA  
+##  Mean   :NaN   Mean   :NaN   Mean   :NaN   Mean   :NaN   Mean   :NaN  
+##  3rd Qu.: NA   3rd Qu.: NA   3rd Qu.: NA   3rd Qu.: NA   3rd Qu.: NA  
+##  Max.   : NA   Max.   : NA   Max.   : NA   Max.   : NA   Max.   : NA  
+##      syrah          cab          score    
+##  Min.   : NA   Min.   : NA   Min.   : NA  
+##  1st Qu.: NA   1st Qu.: NA   1st Qu.: NA  
+##  Median : NA   Median : NA   Median : NA  
+##  Mean   :NaN   Mean   :NaN   Mean   :NaN  
+##  3rd Qu.: NA   3rd Qu.: NA   3rd Qu.: NA  
+##  Max.   : NA   Max.   : NA   Max.   : NA
+</pre></div>
+<div class="source"><pre class="knitr r"><span class="hl kwd">summary</span><span class="hl std">(new_cust[new_cust</span><span class="hl opt">$</span><span class="hl std">target</span> <span class="hl opt">==</span> <span class="hl num">FALSE</span><span class="hl std">,])</span>
+</pre></div>
+<div class="output"><pre class="knitr r">##    last_purch    past_purch      visits        chard       sav_blanc  
+##  Min.   : NA   Min.   : NA   Min.   : NA   Min.   : NA   Min.   : NA  
+##  1st Qu.: NA   1st Qu.: NA   1st Qu.: NA   1st Qu.: NA   1st Qu.: NA  
+##  Median : NA   Median : NA   Median : NA   Median : NA   Median : NA  
+##  Mean   :NaN   Mean   :NaN   Mean   :NaN   Mean   :NaN   Mean   :NaN  
+##  3rd Qu.: NA   3rd Qu.: NA   3rd Qu.: NA   3rd Qu.: NA   3rd Qu.: NA  
+##  Max.   : NA   Max.   : NA   Max.   : NA   Max.   : NA   Max.   : NA  
+##      syrah          cab          score    
+##  Min.   : NA   Min.   : NA   Min.   : NA  
+##  1st Qu.: NA   1st Qu.: NA   1st Qu.: NA  
+##  Median : NA   Median : NA   Median : NA  
+##  Mean   :NaN   Mean   :NaN   Mean   :NaN  
+##  3rd Qu.: NA   3rd Qu.: NA   3rd Qu.: NA  
+##  Max.   : NA   Max.   : NA   Max.   : NA
+</pre></div>
+<div class="source"><pre class="knitr r"><span class="hl std">d</span><span class="hl opt">$</span><span class="hl std">score</span> <span class="hl kwb">=</span>  <span class="hl std">pre</span><span class="hl opt">$</span><span class="hl std">predictions</span><span class="hl opt">*</span><span class="hl num">0.3</span><span class="hl opt">-</span><span class="hl num">0.1</span>
+<span class="hl std">d</span><span class="hl opt">$</span><span class="hl std">target</span> <span class="hl kwb">=</span> <span class="hl std">d</span><span class="hl opt">$</span><span class="hl std">score</span><span class="hl opt">&gt;</span><span class="hl num">0</span>
+</pre></div>
+</div></div>
+
+</body>
+</html>

@@ -1,0 +1,411 @@
+<Social Media Analytics>
+
+<R code>
+<title>Title</title>
+</head>
+
+<body>
+
+<p>Social Media Analytics:</p>
+
+<div class="chunk" id="unnamed-chunk-1"><div class="rcode"><div class="source"><pre class="knitr r"><span class="hl kwd">rm</span><span class="hl std">(</span><span class="hl kwc">list</span><span class="hl std">=</span><span class="hl kwd">ls</span><span class="hl std">())</span>
+<span class="hl kwd">library</span><span class="hl std">(tm)</span>
+</pre></div>
+<div class="message"><pre class="knitr r">## Loading required package: NLP
+</pre></div>
+<div class="source"><pre class="knitr r"><span class="hl kwd">library</span><span class="hl std">(DBI)</span>
+</pre></div>
+<div class="warning"><pre class="knitr r">## Warning: package 'DBI' was built under R version 3.6.3
+</pre></div>
+<div class="source"><pre class="knitr r"><span class="hl kwd">library</span><span class="hl std">(RMySQL)</span>
+</pre></div>
+<div class="warning"><pre class="knitr r">## Warning: package 'RMySQL' was built under R version 3.6.3
+</pre></div>
+<div class="source"><pre class="knitr r"><span class="hl kwd">library</span><span class="hl std">(e1071)</span>
+</pre></div>
+<div class="warning"><pre class="knitr r">## Warning: package 'e1071' was built under R version 3.6.3
+</pre></div>
+<div class="source"><pre class="knitr r"><span class="hl kwd">library</span><span class="hl std">(pROC)</span>
+</pre></div>
+<div class="warning"><pre class="knitr r">## Warning: package 'pROC' was built under R version 3.6.3
+</pre></div>
+<div class="message"><pre class="knitr r">## Type 'citation(&quot;pROC&quot;)' for a citation.
+</pre></div>
+<div class="message"><pre class="knitr r">## 
+## Attaching package: 'pROC'
+</pre></div>
+<div class="message"><pre class="knitr r">## The following objects are masked from 'package:stats':
+## 
+##     cov, smooth, var
+</pre></div>
+<div class="source"><pre class="knitr r"><span class="hl com">## load data</span>
+<span class="hl std">csvdata</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">read.csv</span><span class="hl std">(</span><span class="hl str">&quot;C:/users/DELL/Desktop/Rochester/social media analytics/final/complaint1700.csv&quot;</span><span class="hl std">,</span> <span class="hl kwc">header</span><span class="hl std">=</span><span class="hl num">TRUE</span><span class="hl std">,</span> <span class="hl kwc">sep</span><span class="hl std">=</span><span class="hl str">','</span><span class="hl std">,</span> <span class="hl kwc">quote</span><span class="hl std">=</span><span class="hl str">'&quot;'</span><span class="hl std">)</span>
+<span class="hl std">csvdata1</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">read.csv</span><span class="hl std">(</span><span class="hl str">&quot;C:/users/DELL/Desktop/Rochester/social media analytics/final/noncomplaint1700.csv&quot;</span><span class="hl std">,</span> <span class="hl kwc">header</span><span class="hl std">=</span><span class="hl num">TRUE</span><span class="hl std">,</span> <span class="hl kwc">sep</span><span class="hl std">=</span><span class="hl str">','</span><span class="hl std">,</span> <span class="hl kwc">quote</span><span class="hl std">=</span><span class="hl str">'&quot;'</span><span class="hl std">)</span>
+<span class="hl std">testdata</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">read.csv</span><span class="hl std">(</span><span class="hl str">&quot;C:/users/DELL/Desktop/Rochester/social media analytics/final/airline.csv&quot;</span><span class="hl std">,</span> <span class="hl kwc">header</span><span class="hl std">=</span><span class="hl num">TRUE</span><span class="hl std">,</span> <span class="hl kwc">sep</span><span class="hl std">=</span><span class="hl str">','</span><span class="hl std">,</span> <span class="hl kwc">quote</span><span class="hl std">=</span><span class="hl str">'&quot;'</span><span class="hl std">)</span>
+
+<span class="hl std">testdata</span> <span class="hl kwb">&lt;-</span> <span class="hl std">testdata[,</span><span class="hl kwd">c</span><span class="hl std">(</span><span class="hl num">2</span><span class="hl std">,</span><span class="hl num">4</span><span class="hl std">,</span><span class="hl num">6</span><span class="hl std">)]</span>
+<span class="hl std">airdata</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">rbind</span><span class="hl std">(csvdata, csvdata1, testdata)</span>
+<span class="hl std">air</span> <span class="hl kwb">&lt;-</span> <span class="hl std">airdata[,</span><span class="hl kwd">c</span><span class="hl std">(</span><span class="hl num">1</span><span class="hl std">,</span><span class="hl num">3</span><span class="hl std">)]</span>
+<span class="hl kwd">names</span><span class="hl std">(air)</span> <span class="hl kwb">=</span> <span class="hl kwd">c</span><span class="hl std">(</span><span class="hl str">&quot;doc_id&quot;</span><span class="hl std">,</span> <span class="hl str">&quot;text&quot;</span><span class="hl std">)</span>
+<span class="hl std">docs</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">Corpus</span><span class="hl std">(</span><span class="hl kwd">DataframeSource</span><span class="hl std">(air))</span>
+
+<span class="hl std">mystops</span> <span class="hl kwb">=</span> <span class="hl kwd">c</span><span class="hl std">(</span><span class="hl str">&quot;alaskaair&quot;</span><span class="hl std">,</span><span class="hl str">&quot;fly&quot;</span><span class="hl std">,</span> <span class="hl str">&quot;flying&quot;</span><span class="hl std">,</span><span class="hl str">&quot;flight&quot;</span><span class="hl std">,</span> <span class="hl str">&quot;united&quot;</span><span class="hl std">,</span> <span class="hl str">&quot;americanair&quot;</span><span class="hl std">,</span> <span class="hl str">&quot;jetblue&quot;</span><span class="hl std">,</span> <span class="hl str">&quot;deltaassist&quot;</span><span class="hl std">,</span> <span class="hl str">&quot;now&quot;</span><span class="hl std">,</span> <span class="hl str">&quot;southwestair&quot;</span><span class="hl std">,</span> <span class="hl str">&quot;delta&quot;</span><span class="hl std">,</span> <span class="hl str">&quot;virginamerica&quot;</span><span class="hl std">,</span> <span class="hl str">&quot;airline&quot;</span><span class="hl std">)</span>
+<span class="hl std">dtm</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">DocumentTermMatrix</span><span class="hl std">(docs,</span> <span class="hl kwc">control</span><span class="hl std">=</span><span class="hl kwd">list</span><span class="hl std">(</span><span class="hl kwc">tolower</span><span class="hl std">=T,</span> <span class="hl kwc">removePunctuation</span><span class="hl std">=T,</span> <span class="hl kwc">removeNumbers</span><span class="hl std">=T,</span> <span class="hl kwc">stripWhitespace</span><span class="hl std">=T,</span> <span class="hl kwc">stopwords</span><span class="hl std">=</span><span class="hl kwd">c</span><span class="hl std">(mystops,</span> <span class="hl kwd">stopwords</span><span class="hl std">(</span><span class="hl str">&quot;english&quot;</span><span class="hl std">),</span> <span class="hl kwd">stopwords</span><span class="hl std">(</span><span class="hl str">&quot;spanish&quot;</span><span class="hl std">))))</span>
+<span class="hl std">dtm</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">removeSparseTerms</span><span class="hl std">(dtm,</span><span class="hl num">0.99</span><span class="hl std">)</span>
+<span class="hl std">f1</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">as.matrix</span><span class="hl std">(dtm)</span>
+<span class="hl std">df</span><span class="hl kwb">&lt;-</span> <span class="hl kwd">data.frame</span><span class="hl std">(f1)</span>
+<span class="hl std">df_air</span> <span class="hl kwb">&lt;-</span> <span class="hl std">df[</span><span class="hl num">1</span><span class="hl opt">:</span><span class="hl num">3400</span><span class="hl std">, ]</span>
+<span class="hl std">df_air[</span><span class="hl num">1</span><span class="hl opt">:</span><span class="hl num">1700</span><span class="hl std">,</span> <span class="hl str">'y'</span><span class="hl std">]</span> <span class="hl kwb">&lt;-</span> <span class="hl num">1</span>
+<span class="hl std">df_air[</span><span class="hl num">1701</span><span class="hl opt">:</span><span class="hl num">3400</span><span class="hl std">,</span> <span class="hl str">'y'</span><span class="hl std">]</span> <span class="hl kwb">&lt;-</span> <span class="hl num">0</span>
+</pre></div>
+</div></div>
+
+<div class="chunk" id="unnamed-chunk-2"><div class="rcode"><div class="source"><pre class="knitr r"><span class="hl com">## train data &amp; validation data</span>
+<span class="hl kwd">set.seed</span><span class="hl std">(</span><span class="hl num">1</span><span class="hl std">)</span>
+<span class="hl std">isTraining</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">runif</span><span class="hl std">(</span><span class="hl kwd">nrow</span><span class="hl std">(df_air))</span><span class="hl opt">&lt;</span><span class="hl num">.8</span>
+<span class="hl std">trainingData</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">subset</span><span class="hl std">(df_air,isTraining)</span>
+<span class="hl std">validationData</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">subset</span><span class="hl std">(df_air,</span><span class="hl opt">!</span><span class="hl std">isTraining)</span>
+
+<span class="hl com">## evaluation</span>
+<span class="hl std">Evaluation</span> <span class="hl kwb">&lt;-</span> <span class="hl kwa">function</span><span class="hl std">(</span><span class="hl kwc">pred</span><span class="hl std">,</span> <span class="hl kwc">true</span><span class="hl std">,</span> <span class="hl kwc">class</span><span class="hl std">)</span>
+<span class="hl std">{</span>
+    <span class="hl std">tp</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">sum</span><span class="hl std">( pred</span><span class="hl opt">==</span><span class="hl std">class</span> <span class="hl opt">&amp;</span> <span class="hl std">true</span><span class="hl opt">==</span><span class="hl std">class)</span>
+    <span class="hl std">fp</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">sum</span><span class="hl std">( pred</span><span class="hl opt">==</span><span class="hl std">class</span> <span class="hl opt">&amp;</span> <span class="hl std">true</span><span class="hl opt">!=</span><span class="hl std">class)</span>
+    <span class="hl std">tn</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">sum</span><span class="hl std">( pred</span><span class="hl opt">!=</span><span class="hl std">class</span> <span class="hl opt">&amp;</span> <span class="hl std">true</span><span class="hl opt">!=</span><span class="hl std">class)</span>
+    <span class="hl std">fn</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">sum</span><span class="hl std">( pred</span><span class="hl opt">!=</span><span class="hl std">class</span> <span class="hl opt">&amp;</span> <span class="hl std">true</span><span class="hl opt">==</span><span class="hl std">class)</span>
+    <span class="hl std">precision</span> <span class="hl kwb">&lt;-</span> <span class="hl std">tp</span><span class="hl opt">/</span><span class="hl std">(tp</span><span class="hl opt">+</span><span class="hl std">fp)</span>
+    <span class="hl std">recall</span> <span class="hl kwb">&lt;-</span> <span class="hl std">tp</span><span class="hl opt">/</span><span class="hl std">(tp</span><span class="hl opt">+</span><span class="hl std">fn)</span>
+    <span class="hl std">F1</span> <span class="hl kwb">&lt;-</span> <span class="hl num">2</span><span class="hl opt">/</span><span class="hl std">(</span><span class="hl num">1</span><span class="hl opt">/</span><span class="hl std">precision</span> <span class="hl opt">+</span> <span class="hl num">1</span><span class="hl opt">/</span><span class="hl std">recall)</span>
+    <span class="hl std">F1</span>
+<span class="hl std">}</span>
+</pre></div>
+</div></div>
+
+<div class="chunk" id="unnamed-chunk-3"><div class="rcode"><div class="source"><pre class="knitr r"><span class="hl com">## train model</span>
+
+<span class="hl com">##SVM</span>
+<span class="hl std">svm.model</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">svm</span><span class="hl std">(trainingData[,</span><span class="hl str">'y'</span><span class="hl std">]</span> <span class="hl opt">~</span> <span class="hl std">.,</span> <span class="hl kwc">data</span> <span class="hl std">= trainingData[,</span><span class="hl num">1</span><span class="hl opt">:</span><span class="hl num">157</span><span class="hl std">],</span> <span class="hl kwc">kernel</span><span class="hl std">=</span><span class="hl str">'linear'</span><span class="hl std">)</span>
+<span class="hl std">pred</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">predict</span><span class="hl std">(svm.model, validationData[,</span><span class="hl num">1</span><span class="hl opt">:</span><span class="hl num">157</span><span class="hl std">])</span>
+<span class="hl std">pred.class</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">as.numeric</span><span class="hl std">(pred</span><span class="hl opt">&gt;</span><span class="hl num">0.1</span><span class="hl std">)</span>
+<span class="hl kwd">table</span><span class="hl std">(pred.class, validationData[,</span><span class="hl str">'y'</span><span class="hl std">])</span>
+</pre></div>
+<div class="output"><pre class="knitr r">##           
+## pred.class   0   1
+##          0 139  39
+##          1 197 313
+</pre></div>
+<div class="source"><pre class="knitr r"><span class="hl kwd">Evaluation</span><span class="hl std">(pred.class, validationData[</span><span class="hl str">'y'</span><span class="hl std">],</span> <span class="hl num">1</span><span class="hl std">)</span>
+</pre></div>
+<div class="output"><pre class="knitr r">## [1] 0.7262181
+</pre></div>
+<div class="source"><pre class="knitr r"><span class="hl std">svm.model</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">svm</span><span class="hl std">(trainingData[,</span><span class="hl str">'y'</span><span class="hl std">]</span> <span class="hl opt">~</span> <span class="hl std">.,</span> <span class="hl kwc">data</span> <span class="hl std">= trainingData[,</span><span class="hl num">1</span><span class="hl opt">:</span><span class="hl num">157</span><span class="hl std">],</span> <span class="hl kwc">kernel</span><span class="hl std">=</span><span class="hl str">'polynomial'</span><span class="hl std">)</span>
+<span class="hl std">pred</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">predict</span><span class="hl std">(svm.model, validationData[,</span><span class="hl num">1</span><span class="hl opt">:</span><span class="hl num">157</span><span class="hl std">])</span>
+<span class="hl std">pred.class</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">as.numeric</span><span class="hl std">(pred</span><span class="hl opt">&gt;</span><span class="hl num">0.1</span><span class="hl std">)</span>
+<span class="hl kwd">table</span><span class="hl std">(pred.class, validationData[,</span><span class="hl str">'y'</span><span class="hl std">])</span>
+</pre></div>
+<div class="output"><pre class="knitr r">##           
+## pred.class   0   1
+##          0  78  19
+##          1 258 333
+</pre></div>
+<div class="source"><pre class="knitr r"><span class="hl kwd">Evaluation</span><span class="hl std">(pred.class, validationData[</span><span class="hl str">'y'</span><span class="hl std">],</span> <span class="hl num">1</span><span class="hl std">)</span>
+</pre></div>
+<div class="output"><pre class="knitr r">## [1] 0.7062566
+</pre></div>
+<div class="source"><pre class="knitr r"><span class="hl com">##Naive Bayesion</span>
+
+<span class="hl std">nb.model</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">naiveBayes</span><span class="hl std">(trainingData[,</span><span class="hl num">1</span><span class="hl opt">:</span><span class="hl num">157</span><span class="hl std">],</span> <span class="hl kwd">factor</span><span class="hl std">(trainingData[,</span><span class="hl str">'y'</span><span class="hl std">]))</span> <span class="hl com"># encode the response as a factor variable</span>
+<span class="hl std">pred.class</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">predict</span><span class="hl std">(nb.model, validationData[,</span><span class="hl num">1</span><span class="hl opt">:</span><span class="hl num">157</span><span class="hl std">])</span>
+<span class="hl kwd">table</span><span class="hl std">(pred.class, validationData[,</span><span class="hl str">'y'</span><span class="hl std">] )</span>
+</pre></div>
+<div class="output"><pre class="knitr r">##           
+## pred.class   0   1
+##          0 270 141
+##          1  66 211
+</pre></div>
+<div class="source"><pre class="knitr r"><span class="hl kwd">Evaluation</span><span class="hl std">(pred.class, validationData[,</span><span class="hl str">'y'</span><span class="hl std">],</span> <span class="hl num">1</span><span class="hl std">)</span>
+</pre></div>
+<div class="output"><pre class="knitr r">## [1] 0.6709062
+</pre></div>
+<div class="source"><pre class="knitr r"><span class="hl com">##Maximum Entropy</span>
+<span class="hl kwd">source</span><span class="hl std">(</span><span class="hl str">'C:/users/DELL/Desktop/Rochester/social media analytics/final/Maximum Entropy.R'</span><span class="hl std">)</span>
+<span class="hl std">maxent.model</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">maximumentropy</span><span class="hl std">(trainingData[,</span><span class="hl num">1</span><span class="hl opt">:</span><span class="hl num">157</span><span class="hl std">], trainingData[,</span><span class="hl str">'y'</span><span class="hl std">])</span>
+</pre></div>
+<div class="output"><pre class="knitr r">## iter    1 value 1715.717041
+## iter    2 value 1537.677006
+## iter    3 value 1472.132010
+## iter    4 value 1445.499093
+## iter    5 value 1433.218762
+## iter    6 value 1426.048114
+## iter    7 value 1421.622314
+## iter    8 value 1420.436076
+## iter    9 value 1420.070678
+## iter   10 value 1419.658580
+## iter   11 value 1419.454138
+## iter   12 value 1419.218876
+## iter   13 value 1419.142970
+## iter   14 value 1419.048775
+## iter   15 value 1418.918341
+## iter   16 value 1418.827654
+## iter   17 value 1418.689382
+## iter   18 value 1418.603587
+## iter   19 value 1418.558400
+## iter   20 value 1418.525241
+## iter   21 value 1418.495074
+## iter   22 value 1418.477302
+## iter   23 value 1418.446817
+## iter   24 value 1418.433767
+## iter   25 value 1418.428896
+## iter   26 value 1418.423493
+## iter   27 value 1418.418567
+## iter   28 value 1418.414182
+## iter   29 value 1418.411943
+## iter   30 value 1418.407286
+## iter   31 value 1418.405448
+## iter   32 value 1418.400215
+## iter   33 value 1418.397197
+## iter   34 value 1418.394459
+## iter   35 value 1418.389955
+## iter   36 value 1418.387391
+## iter   37 value 1418.384553
+## iter   38 value 1418.383037
+## iter   39 value 1418.380140
+## iter   40 value 1418.379042
+## iter   41 value 1418.377447
+## iter   42 value 1418.376646
+## iter   43 value 1418.375612
+## iter   44 value 1418.375212
+## iter   45 value 1418.374629
+## iter   46 value 1418.374372
+## iter   47 value 1418.374087
+## iter   48 value 1418.373561
+## iter   49 value 1418.373186
+## iter   50 value 1418.372686
+## iter   51 value 1418.372512
+## iter   52 value 1418.372315
+## iter   53 value 1418.372130
+## iter   54 value 1418.371937
+## iter   55 value 1418.371541
+## iter   56 value 1418.371260
+## iter   57 value 1418.370903
+## iter   58 value 1418.370637
+## iter   59 value 1418.370532
+## iter   60 value 1418.370428
+## iter   61 value 1418.370354
+## iter   62 value 1418.370249
+## iter   63 value 1418.370152
+## iter   64 value 1418.370085
+## iter   65 value 1418.370036
+## iter   66 value 1418.369982
+## iter   67 value 1418.369939
+## iter   68 value 1418.369905
+## iter   69 value 1418.369890
+## iter   70 value 1418.369856
+## iter   71 value 1418.369833
+## iter   72 value 1418.369821
+## iter   73 value 1418.369800
+## iter   74 value 1418.369795
+## iter   75 value 1418.369785
+## iter   76 value 1418.369780
+## iter   77 value 1418.369766
+## iter   78 value 1418.369762
+## iter   79 value 1418.369758
+## iter   80 value 1418.369755
+## iter   81 value 1418.369751
+## iter   82 value 1418.369747
+## iter   83 value 1418.369745
+## final  value 1418.369745 
+## converged
+</pre></div>
+<div class="source"><pre class="knitr r"><span class="hl std">pred</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">predict</span><span class="hl std">(maxent.model, validationData[,</span><span class="hl num">1</span><span class="hl opt">:</span><span class="hl num">157</span><span class="hl std">])</span>
+<span class="hl kwd">as.numeric</span><span class="hl std">(pred[,</span><span class="hl num">2</span><span class="hl std">])</span> <span class="hl opt">+</span> <span class="hl kwd">as.numeric</span><span class="hl std">(pred[,</span><span class="hl num">3</span><span class="hl std">])</span>
+</pre></div>
+<div class="output"><pre class="knitr r">##   [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+##  [38] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+##  [75] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+## [112] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+## [149] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+## [186] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+## [223] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+## [260] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+## [297] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+## [334] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+## [371] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+## [408] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+## [445] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+## [482] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+## [519] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+## [556] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+## [593] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+## [630] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+## [667] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+</pre></div>
+<div class="source"><pre class="knitr r"><span class="hl kwd">table</span><span class="hl std">(pred[,</span><span class="hl num">1</span><span class="hl std">], validationData[,</span><span class="hl str">'y'</span><span class="hl std">] )</span>
+</pre></div>
+<div class="output"><pre class="knitr r">##    
+##       0   1
+##   0 234 109
+##   1 102 243
+</pre></div>
+<div class="source"><pre class="knitr r"><span class="hl kwd">Evaluation</span><span class="hl std">(pred[,</span><span class="hl num">1</span><span class="hl std">], validationData[,</span><span class="hl str">'y'</span><span class="hl std">],</span> <span class="hl num">1</span><span class="hl std">)</span>
+</pre></div>
+<div class="output"><pre class="knitr r">## [1] 0.697274
+</pre></div>
+<div class="source"><pre class="knitr r"><span class="hl com">##Random Forest</span>
+<span class="hl kwd">install.packages</span><span class="hl std">(</span><span class="hl str">'randomForest'</span><span class="hl std">,</span> <span class="hl kwc">repos</span><span class="hl std">=</span><span class="hl str">'http://cran.us.r-project.org'</span><span class="hl std">)</span>
+</pre></div>
+<div class="message"><pre class="knitr r">## Installing package into 'C:/Users/DELL/Documents/R/win-library/3.6'
+## (as 'lib' is unspecified)
+</pre></div>
+<div class="output"><pre class="knitr r">## package 'randomForest' successfully unpacked and MD5 sums checked
+## 
+## The downloaded binary packages are in
+## 	C:\Users\DELL\AppData\Local\Temp\Rtmp8Y1L0N\downloaded_packages
+</pre></div>
+<div class="source"><pre class="knitr r"><span class="hl kwd">library</span><span class="hl std">(</span><span class="hl str">'randomForest'</span><span class="hl std">)</span>
+</pre></div>
+<div class="warning"><pre class="knitr r">## Warning: package 'randomForest' was built under R version 3.6.3
+</pre></div>
+<div class="message"><pre class="knitr r">## randomForest 4.6-14
+</pre></div>
+<div class="message"><pre class="knitr r">## Type rfNews() to see new features/changes/bug fixes.
+</pre></div>
+<div class="source"><pre class="knitr r"><span class="hl std">rf</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">randomForest</span><span class="hl std">(</span><span class="hl kwd">factor</span><span class="hl std">(y)</span> <span class="hl opt">~</span> <span class="hl std">. ,</span> <span class="hl kwc">data</span><span class="hl std">=trainingData)</span>
+<span class="hl std">pred</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">predict</span><span class="hl std">(rf, validationData[,</span><span class="hl num">1</span><span class="hl opt">:</span><span class="hl num">157</span><span class="hl std">])</span>
+<span class="hl kwd">table</span><span class="hl std">(pred, validationData[,</span><span class="hl str">'y'</span><span class="hl std">] )</span>
+</pre></div>
+<div class="output"><pre class="knitr r">##     
+## pred   0   1
+##    0 229 109
+##    1 107 243
+</pre></div>
+<div class="source"><pre class="knitr r"><span class="hl kwd">Evaluation</span><span class="hl std">(pred, validationData[,</span><span class="hl str">'y'</span><span class="hl std">],</span> <span class="hl num">1</span><span class="hl std">)</span>
+</pre></div>
+<div class="output"><pre class="knitr r">## [1] 0.6923077
+</pre></div>
+<div class="source"><pre class="knitr r"><span class="hl com">##KNN</span>
+<span class="hl kwd">library</span><span class="hl std">(kknn)</span>
+</pre></div>
+<div class="warning"><pre class="knitr r">## Warning: package 'kknn' was built under R version 3.6.3
+</pre></div>
+<div class="source"><pre class="knitr r"><span class="hl std">validationData1</span> <span class="hl kwb">&lt;-</span> <span class="hl std">validationData</span>
+<span class="hl std">pre3</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">kknn</span><span class="hl std">(</span><span class="hl kwd">factor</span><span class="hl std">(trainingData[,</span><span class="hl str">'y'</span><span class="hl std">])</span><span class="hl opt">~</span><span class="hl std">., trainingData, validationData,</span> <span class="hl kwc">distance</span> <span class="hl std">=</span> <span class="hl num">1</span><span class="hl std">,</span> <span class="hl kwc">kernel</span> <span class="hl std">=</span> <span class="hl str">&quot;triangular&quot;</span><span class="hl std">)</span>
+<span class="hl std">fit</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">fitted</span><span class="hl std">(pre3)</span>
+<span class="hl kwd">table</span><span class="hl std">(fit,validationData[,</span><span class="hl str">'y'</span><span class="hl std">])</span>
+</pre></div>
+<div class="output"><pre class="knitr r">##    
+## fit   0   1
+##   0 304  63
+##   1  32 289
+</pre></div>
+<div class="source"><pre class="knitr r"><span class="hl kwd">Evaluation</span><span class="hl std">(fit, validationData[,</span><span class="hl str">'y'</span><span class="hl std">],</span> <span class="hl num">1</span><span class="hl std">)</span>
+</pre></div>
+<div class="output"><pre class="knitr r">## [1] 0.858841
+</pre></div>
+<div class="source"><pre class="knitr r"><span class="hl com">##test data</span>
+<span class="hl std">test</span> <span class="hl kwb">&lt;-</span> <span class="hl std">df[</span><span class="hl num">3401</span><span class="hl opt">:</span><span class="hl num">7955</span><span class="hl std">,]</span>
+<span class="hl std">pred_test</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">predict</span><span class="hl std">(svm.model, test)</span>
+<span class="hl std">pred.class_test</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">as.numeric</span><span class="hl std">(pred_test</span><span class="hl opt">&gt;</span><span class="hl num">0.1</span><span class="hl std">)</span>
+<span class="hl std">testdata</span><span class="hl opt">$</span><span class="hl std">y</span> <span class="hl kwb">&lt;-</span> <span class="hl std">pred.class_test</span>
+<span class="hl std">df1</span> <span class="hl kwb">&lt;-</span> <span class="hl std">testdata[testdata</span><span class="hl opt">$</span><span class="hl std">y</span> <span class="hl opt">==</span> <span class="hl num">0</span><span class="hl std">, ]</span>
+
+<span class="hl com">## rule classification to test data</span>
+<span class="hl com">## word frequency of complaint</span>
+<span class="hl std">com_air</span> <span class="hl kwb">&lt;-</span> <span class="hl std">airdata[</span><span class="hl num">1</span><span class="hl opt">:</span><span class="hl num">1700</span><span class="hl std">,</span><span class="hl kwd">c</span><span class="hl std">(</span><span class="hl num">1</span><span class="hl std">,</span><span class="hl num">3</span><span class="hl std">)]</span>
+<span class="hl kwd">names</span><span class="hl std">(com_air)</span> <span class="hl kwb">=</span> <span class="hl kwd">c</span><span class="hl std">(</span><span class="hl str">&quot;doc_id&quot;</span><span class="hl std">,</span> <span class="hl str">&quot;text&quot;</span><span class="hl std">)</span>
+<span class="hl std">docs_com</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">Corpus</span><span class="hl std">(</span><span class="hl kwd">DataframeSource</span><span class="hl std">(com_air))</span>
+
+<span class="hl std">mystops</span> <span class="hl kwb">=</span> <span class="hl kwd">c</span><span class="hl std">(</span><span class="hl str">&quot;alaskaair&quot;</span><span class="hl std">,</span><span class="hl str">&quot;fly&quot;</span><span class="hl std">,</span> <span class="hl str">&quot;flying&quot;</span><span class="hl std">,</span><span class="hl str">&quot;flight&quot;</span><span class="hl std">,</span> <span class="hl str">&quot;united&quot;</span><span class="hl std">,</span> <span class="hl str">&quot;americanair&quot;</span><span class="hl std">,</span> <span class="hl str">&quot;jetblue&quot;</span><span class="hl std">,</span> <span class="hl str">&quot;deltaassist&quot;</span><span class="hl std">,</span> <span class="hl str">&quot;now&quot;</span><span class="hl std">,</span> <span class="hl str">&quot;southwestair&quot;</span><span class="hl std">,</span> <span class="hl str">&quot;delta&quot;</span><span class="hl std">,</span> <span class="hl str">&quot;virginamerica&quot;</span><span class="hl std">,</span> <span class="hl str">&quot;airline&quot;</span><span class="hl std">)</span>
+<span class="hl std">dtm_com</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">DocumentTermMatrix</span><span class="hl std">(docs_com,</span> <span class="hl kwc">control</span><span class="hl std">=</span><span class="hl kwd">list</span><span class="hl std">(</span><span class="hl kwc">tolower</span><span class="hl std">=T,</span> <span class="hl kwc">removePunctuation</span><span class="hl std">=T,</span> <span class="hl kwc">removeNumbers</span><span class="hl std">=T,</span> <span class="hl kwc">stripWhitespace</span><span class="hl std">=T,</span> <span class="hl kwc">stopwords</span><span class="hl std">=</span><span class="hl kwd">c</span><span class="hl std">(mystops,</span> <span class="hl kwd">stopwords</span><span class="hl std">(</span><span class="hl str">&quot;english&quot;</span><span class="hl std">),</span> <span class="hl kwd">stopwords</span><span class="hl std">(</span><span class="hl str">&quot;spanish&quot;</span><span class="hl std">))))</span>
+<span class="hl std">dtm_com</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">removeSparseTerms</span><span class="hl std">(dtm_com,</span><span class="hl num">0.995</span><span class="hl std">)</span>
+<span class="hl std">freq_com</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">colSums</span><span class="hl std">(</span> <span class="hl kwd">as.matrix</span><span class="hl std">(dtm_com) )</span>
+<span class="hl std">freq.sorted_com</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">sort</span><span class="hl std">( freq_com,</span> <span class="hl kwc">decreasing</span><span class="hl std">=</span><span class="hl num">TRUE</span> <span class="hl std">)</span>
+<span class="hl std">freq.sorted_com[</span><span class="hl num">1</span><span class="hl opt">:</span><span class="hl num">100</span><span class="hl std">]</span>
+</pre></div>
+<div class="output"><pre class="knitr r">##      delayed          get      service        hours        never          can 
+##          178          149          124          118          118          116 
+##          amp        delay        plane        worst         help      waiting 
+##          111          107          105          100           98           95 
+##         hour         time      flights         gate     customer         ever 
+##           92           91           89           88           88           84 
+##         just    cancelled         hold          one         will         back 
+##           83           81           77           75           75           68 
+##         lost        still          bad          ive          bag       please 
+##           68           67           66           64           63           58 
+##        today         cant         like         wait        stuck   experience 
+##           58           56           56           55           55           55 
+##       really         late         need         wifi      another         last 
+##           54           53           53           52           52           50 
+##      minutes         dont        first         bags          min disappointed 
+##           49           49           48           46           46           45 
+##        phone       people          hey         miss         home     terrible 
+##           45           45           45           45           44           44 
+##      airport        going       trying         make          day      sitting 
+##           44           43           43           41           41           40 
+##          hrs         call         seat         even          new   connection 
+##           40           40           40           39           39           38 
+##          due      luggage       missed          got          jfk       delays 
+##           38           38           37           37           37           37 
+##          way         wont       better        issue       change     response 
+##           37           36           36           36           36           36 
+##          two      missing     airlines    usairways         guys        leave 
+##           35           35           34           34           33           33 
+##        sucks      getting         told         mins      problem        thats 
+##           32           32           32           32           32           31 
+##       issues         work          lax         fail        check       travel 
+##           30           30           30           30           29           29 
+##        class         days         hope         want 
+##           29           28           28           28
+</pre></div>
+<div class="source"><pre class="knitr r"><span class="hl com">##word frequency of noncomplaint</span>
+<span class="hl std">non_air</span> <span class="hl kwb">&lt;-</span> <span class="hl std">airdata[</span><span class="hl num">1701</span><span class="hl opt">:</span><span class="hl num">3400</span><span class="hl std">,</span><span class="hl kwd">c</span><span class="hl std">(</span><span class="hl num">1</span><span class="hl std">,</span><span class="hl num">3</span><span class="hl std">)]</span>
+<span class="hl kwd">names</span><span class="hl std">(non_air)</span> <span class="hl kwb">=</span> <span class="hl kwd">c</span><span class="hl std">(</span><span class="hl str">&quot;doc_id&quot;</span><span class="hl std">,</span> <span class="hl str">&quot;text&quot;</span><span class="hl std">)</span>
+<span class="hl std">docs_non</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">Corpus</span><span class="hl std">(</span><span class="hl kwd">DataframeSource</span><span class="hl std">(non_air))</span>
+
+<span class="hl std">mystops</span> <span class="hl kwb">=</span> <span class="hl kwd">c</span><span class="hl std">(</span><span class="hl str">&quot;alaskaair&quot;</span><span class="hl std">,</span><span class="hl str">&quot;fly&quot;</span><span class="hl std">,</span> <span class="hl str">&quot;flying&quot;</span><span class="hl std">,</span><span class="hl str">&quot;flight&quot;</span><span class="hl std">,</span> <span class="hl str">&quot;united&quot;</span><span class="hl std">,</span> <span class="hl str">&quot;americanair&quot;</span><span class="hl std">,</span> <span class="hl str">&quot;jetblue&quot;</span><span class="hl std">,</span> <span class="hl str">&quot;deltaassist&quot;</span><span class="hl std">,</span> <span class="hl str">&quot;now&quot;</span><span class="hl std">,</span> <span class="hl str">&quot;southwestair&quot;</span><span class="hl std">,</span> <span class="hl str">&quot;delta&quot;</span><span class="hl std">,</span> <span class="hl str">&quot;virginamerica&quot;</span><span class="hl std">,</span> <span class="hl str">&quot;airline&quot;</span><span class="hl std">)</span>
+<span class="hl std">dtm_non</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">DocumentTermMatrix</span><span class="hl std">(docs_non,</span> <span class="hl kwc">control</span><span class="hl std">=</span><span class="hl kwd">list</span><span class="hl std">(</span><span class="hl kwc">tolower</span><span class="hl std">=T,</span> <span class="hl kwc">removePunctuation</span><span class="hl std">=T,</span> <span class="hl kwc">removeNumbers</span><span class="hl std">=T,</span> <span class="hl kwc">stripWhitespace</span><span class="hl std">=T,</span> <span class="hl kwc">stopwords</span><span class="hl std">=</span><span class="hl kwd">c</span><span class="hl std">(mystops,</span> <span class="hl kwd">stopwords</span><span class="hl std">(</span><span class="hl str">&quot;english&quot;</span><span class="hl std">),</span> <span class="hl kwd">stopwords</span><span class="hl std">(</span><span class="hl str">&quot;spanish&quot;</span><span class="hl std">))))</span>
+<span class="hl std">dtm_non</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">removeSparseTerms</span><span class="hl std">(dtm_non,</span><span class="hl num">0.995</span><span class="hl std">)</span>
+<span class="hl std">freq_non</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">colSums</span><span class="hl std">(</span> <span class="hl kwd">as.matrix</span><span class="hl std">(dtm_non) )</span>
+<span class="hl std">freq.sorted_non</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">sort</span><span class="hl std">(freq_non,</span> <span class="hl kwc">decreasing</span><span class="hl std">=</span><span class="hl num">TRUE</span> <span class="hl std">)</span>
+<span class="hl std">freq.sorted_non[</span><span class="hl num">1</span><span class="hl opt">:</span><span class="hl num">100</span><span class="hl std">]</span>
+</pre></div>
+<div class="output"><pre class="knitr r">##       wait      never        can        amp        get       cant       just 
+##        154        150        121        113        102        101         95 
+##       miss       time       will        bad    flights       like       dont 
+##         89         87         86         86         75         70         64 
+##     thanks      great      issue     travel    waiting  cancelled      plane 
+##         63         61         61         61         60         59         55 
+##       back      today        new      leave        got    service        day 
+##         54         54         54         52         51         51         51 
+##      first        see        way       late    delayed   airlines      thank 
+##         51         51         51         49         49         48         48 
+##       lost      delay       best       good        one       need     missed 
+##         48         47         46         46         45         45         42 
+##        ive       know     cancel       home    problem       guys       last 
+##         41         41         41         41         41         40         39 
+##       love       help      going        sad     longer   customer      stuck 
+##         37         37         37         37         36         36         35 
+##       trip      sorry       much     issues   tomorrow     people     switch 
+##         34         34         34         34         33         33         32 
+##     please      youre      still       even       make       seat     always 
+##         32         32         31         30         30         29         29 
+##     really       gate        ill     better    tonight      didnt        jfk 
+##         29         29         28         27         27         27         27 
+##    getting       next    missing       hold        air experience       hope 
+##         27         27         27         27         26         26         26 
+##    another    weather    awesome    morning       call    chicago  usairways 
+##         26         26         25         25         25         24         24 
+##       crew      miles      early       free        via       made       give 
+##         24         24         24         24         23         23         23 
+##       want      thats 
+##         22         22
+</pre></div>
+<div class="source"><pre class="knitr r"><span class="hl std">a</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">grep</span><span class="hl std">(</span><span class="hl str">&quot;fuck|shit|worst|bad|hate|awful|wtf|worse|disappoint|frustrat|rude|never|poor|sad|disgust|bother|no longer|changing|hell|suck|stuck|unacceptable|upset|ruin|shame|unprofessional|complaint|nothappy|kill|waste|screw&quot;</span><span class="hl std">,</span>
+          <span class="hl std">df1</span><span class="hl opt">$</span><span class="hl std">tweet,</span> <span class="hl kwc">ignore.case</span><span class="hl std">=</span><span class="hl num">TRUE</span><span class="hl std">,</span>  <span class="hl kwc">perl</span><span class="hl std">=</span><span class="hl num">TRUE</span><span class="hl std">)</span>
+
+<span class="hl std">df3</span> <span class="hl kwb">&lt;-</span> <span class="hl std">df1[</span><span class="hl opt">-</span><span class="hl std">a, ]</span>
+</pre></div>
+</div></div>
+
+</body>
+</html>

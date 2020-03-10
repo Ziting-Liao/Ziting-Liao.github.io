@@ -1,0 +1,407 @@
+<Conjoint Analysis>
+
+<R code>
+<title>Title</title>
+</head>
+
+<body>
+
+<p>Conjoint Analysis:</p>
+
+<div class="chunk" id="unnamed-chunk-1"><div class="rcode"><div class="source"><pre class="knitr r"><span class="hl kwd">require</span><span class="hl std">(</span><span class="hl str">&quot;cluster&quot;</span><span class="hl std">)</span>
+</pre></div>
+<div class="message"><pre class="knitr r">## Loading required package: cluster
+</pre></div>
+<div class="source"><pre class="knitr r"><span class="hl kwd">require</span><span class="hl std">(</span><span class="hl str">&quot;fpc&quot;</span><span class="hl std">)</span>
+</pre></div>
+<div class="message"><pre class="knitr r">## Loading required package: fpc
+</pre></div>
+<div class="source"><pre class="knitr r"><span class="hl kwd">require</span><span class="hl std">(</span><span class="hl str">&quot;factoextra&quot;</span><span class="hl std">)</span>
+</pre></div>
+<div class="message"><pre class="knitr r">## Loading required package: factoextra
+</pre></div>
+<div class="message"><pre class="knitr r">## Loading required package: ggplot2
+</pre></div>
+<div class="message"><pre class="knitr r">## Welcome! Want to learn more? See two factoextra-related books at https://goo.gl/ve3WBa
+</pre></div>
+<div class="source"><pre class="knitr r"><span class="hl kwd">require</span><span class="hl std">(</span><span class="hl str">&quot;gridExtra&quot;</span><span class="hl std">)</span>
+</pre></div>
+<div class="message"><pre class="knitr r">## Loading required package: gridExtra
+</pre></div>
+<div class="source"><pre class="knitr r"><span class="hl kwd">library</span><span class="hl std">(cluster)</span>
+<span class="hl kwd">library</span><span class="hl std">(fpc)</span>
+<span class="hl kwd">library</span><span class="hl std">(factoextra)</span>
+<span class="hl kwd">library</span><span class="hl std">(gridExtra)</span>
+<span class="hl kwd">library</span><span class="hl std">(</span><span class="hl str">&quot;conjoint&quot;</span><span class="hl std">)</span>
+
+<span class="hl com">##load data</span>
+<span class="hl kwd">load</span><span class="hl std">(</span><span class="hl str">&quot;C:/Users/DELL/Desktop/Rochester/analytics design/case 3/GBA424 - Toy Horse Case Data.Rdata&quot;</span><span class="hl std">)</span>
+
+<span class="hl com">##delete NA rows</span>
+<span class="hl std">df1</span> <span class="hl kwb">=</span> <span class="hl std">conjointData[</span><span class="hl kwd">complete.cases</span><span class="hl std">(conjointData</span><span class="hl opt">$</span><span class="hl std">ratings), ]</span>
+</pre></div>
+</div></div>
+
+<p>You can also embed plots, for example:</p>
+
+<div class="chunk" id="unnamed-chunk-2"><div class="rcode"><div class="source"><pre class="knitr r"><span class="hl std">dt</span> <span class="hl kwb">=</span> <span class="hl kwd">data.table</span><span class="hl std">(d)</span>
+</pre></div>
+<div class="error"><pre class="knitr r">## Error in data.table(d): could not find function &quot;data.table&quot;
+</pre></div>
+<div class="source"><pre class="knitr r"><span class="hl std">dagg</span> <span class="hl kwb">=</span> <span class="hl std">dt[,</span><span class="hl kwd">.</span><span class="hl std">(</span><span class="hl kwc">open</span> <span class="hl std">=</span> <span class="hl kwd">mean</span><span class="hl std">(open),</span> <span class="hl kwc">click</span><span class="hl std">=</span><span class="hl kwd">mean</span><span class="hl std">(click),</span> <span class="hl kwc">purch</span> <span class="hl std">=</span> <span class="hl kwd">mean</span><span class="hl std">(purch),</span><span class="hl kwc">seOpen</span> <span class="hl std">=</span> <span class="hl kwd">sd</span><span class="hl std">(open)</span><span class="hl opt">/</span><span class="hl kwd">sqrt</span><span class="hl std">(.N),</span> <span class="hl kwc">seClick</span><span class="hl std">=</span><span class="hl kwd">sd</span><span class="hl std">(click)</span><span class="hl opt">/</span><span class="hl kwd">sqrt</span><span class="hl std">(.N),</span> <span class="hl kwc">sePurch</span> <span class="hl std">=</span> <span class="hl kwd">sd</span><span class="hl std">(purch)</span><span class="hl opt">/</span><span class="hl kwd">sqrt</span><span class="hl std">(.N),.N),</span><span class="hl kwc">by</span> <span class="hl std">=</span> <span class="hl kwd">.</span><span class="hl std">(group)]</span>
+</pre></div>
+<div class="error"><pre class="knitr r">## Error in .(open = mean(open), click = mean(click), purch = mean(purch), : could not find function &quot;.&quot;
+</pre></div>
+<div class="source"><pre class="knitr r"><span class="hl std">dagg</span>
+</pre></div>
+<div class="error"><pre class="knitr r">## Error in eval(expr, envir, enclos): object 'dagg' not found
+</pre></div>
+<div class="source"><pre class="knitr r"><span class="hl std">dodge</span> <span class="hl kwb">=</span> <span class="hl kwd">position_dodge</span><span class="hl std">(</span><span class="hl kwc">width</span><span class="hl std">=</span><span class="hl num">1</span><span class="hl std">)</span>
+<span class="hl kwd">ggplot</span><span class="hl std">(</span><span class="hl kwd">aes</span><span class="hl std">(</span><span class="hl kwc">x</span><span class="hl std">=group,</span><span class="hl kwc">y</span><span class="hl std">=purch,</span><span class="hl kwc">ymax</span><span class="hl std">=purch</span><span class="hl opt">+</span><span class="hl std">sePurch,</span><span class="hl kwc">ymin</span><span class="hl std">=purch</span><span class="hl opt">-</span><span class="hl std">sePurch),</span><span class="hl kwc">data</span><span class="hl std">=dagg)</span><span class="hl opt">+</span>
+    <span class="hl kwd">geom_bar</span><span class="hl std">(</span><span class="hl kwc">position</span><span class="hl std">=dodge,</span><span class="hl kwc">stat</span><span class="hl std">=</span><span class="hl str">&quot;identity&quot;</span><span class="hl std">,</span><span class="hl kwc">col</span><span class="hl std">=</span><span class="hl num">2</span><span class="hl opt">:</span><span class="hl num">3</span><span class="hl std">,</span><span class="hl kwc">fill</span><span class="hl std">=</span><span class="hl num">2</span><span class="hl opt">:</span><span class="hl num">3</span><span class="hl std">)</span> <span class="hl opt">+</span>
+    <span class="hl kwd">geom_errorbar</span><span class="hl std">(</span><span class="hl kwc">position</span><span class="hl std">=dodge)</span>
+</pre></div>
+<div class="error"><pre class="knitr r">## Error in ggplot(aes(x = group, y = purch, ymax = purch + sePurch, ymin = purch - : object 'dagg' not found
+</pre></div>
+<div class="source"><pre class="knitr r"><span class="hl kwd">labs</span><span class="hl std">(</span><span class="hl kwc">x</span><span class="hl std">=</span><span class="hl str">&quot;Group&quot;</span><span class="hl std">,</span><span class="hl kwc">y</span><span class="hl std">=</span><span class="hl str">&quot;Purchases&quot;</span><span class="hl std">)</span>
+</pre></div>
+<div class="output"><pre class="knitr r">## $x
+## [1] &quot;Group&quot;
+## 
+## $y
+## [1] &quot;Purchases&quot;
+## 
+## attr(,&quot;class&quot;)
+## [1] &quot;labels&quot;
+</pre></div>
+<div class="source"><pre class="knitr r"><span class="hl kwd">summary</span><span class="hl std">(</span><span class="hl kwd">lm</span><span class="hl std">(purch</span><span class="hl opt">~</span><span class="hl std">group,</span><span class="hl kwc">data</span><span class="hl std">=d))</span>
+</pre></div>
+<div class="error"><pre class="knitr r">## Error in is.data.frame(data): object 'd' not found
+</pre></div>
+<div class="source"><pre class="knitr r"><span class="hl std">d</span><span class="hl opt">$</span><span class="hl std">email</span> <span class="hl kwb">=</span> <span class="hl std">(d</span><span class="hl opt">$</span><span class="hl std">group</span> <span class="hl opt">!=</span> <span class="hl str">&quot;ctrl&quot;</span><span class="hl std">)</span>
+</pre></div>
+<div class="error"><pre class="knitr r">## Error in eval(expr, envir, enclos): object 'd' not found
+</pre></div>
+</div></div>
+
+<div class="chunk" id="unnamed-chunk-3"><div class="rcode"><div class="source"><pre class="knitr r"><span class="hl com">##recent purchase</span>
+<span class="hl com">##create a new dataframe, which has 5 columns</span>
+<span class="hl std">util</span> <span class="hl kwb">=</span> <span class="hl kwd">as.data.frame</span><span class="hl std">(</span><span class="hl kwd">array</span><span class="hl std">(</span><span class="hl kwc">dim</span><span class="hl std">=</span><span class="hl kwd">c</span><span class="hl std">(</span><span class="hl num">1</span><span class="hl std">,</span><span class="hl num">5</span><span class="hl std">)))</span>
+<span class="hl kwd">colnames</span><span class="hl std">(util)</span> <span class="hl kwb">=</span> <span class="hl kwd">c</span><span class="hl std">(</span><span class="hl str">&quot;(intercept)&quot;</span><span class="hl std">,</span> <span class="hl str">&quot;pricelow&quot;</span><span class="hl std">,</span> <span class="hl str">&quot;26inches&quot;</span><span class="hl std">,</span> <span class="hl str">&quot;Rocking&quot;</span><span class="hl std">,</span> <span class="hl str">&quot;Glamour&quot;</span><span class="hl std">)</span>
+
+<span class="hl com">##complete individual part-utilities</span>
+<span class="hl kwa">for</span> <span class="hl std">(i</span> <span class="hl kwa">in</span> <span class="hl num">1</span><span class="hl opt">:</span><span class="hl num">200</span><span class="hl std">){</span>
+   <span class="hl std">lm1</span> <span class="hl kwb">=</span> <span class="hl kwd">lm</span><span class="hl std">(ratings</span><span class="hl opt">~</span><span class="hl kwd">factor</span><span class="hl std">(price)</span><span class="hl opt">+</span><span class="hl kwd">factor</span><span class="hl std">(size)</span><span class="hl opt">+</span><span class="hl kwd">factor</span><span class="hl std">(motion)</span><span class="hl opt">+</span><span class="hl kwd">factor</span><span class="hl std">(style),</span> <span class="hl kwc">data</span> <span class="hl std">= df1[df1</span><span class="hl opt">$</span><span class="hl std">ID</span> <span class="hl opt">==</span><span class="hl std">i, ])</span>
+   <span class="hl std">util[i,]</span> <span class="hl kwb">=</span> <span class="hl std">lm1</span><span class="hl opt">$</span><span class="hl std">coefficients</span>
+<span class="hl std">}</span>
+</pre></div>
+</div></div>
+
+<div class="chunk" id="unnamed-chunk-4"><div class="rcode"><div class="source"><pre class="knitr r"><span class="hl com">##cluster </span>
+<span class="hl std">clustTest</span> <span class="hl kwb">=</span> <span class="hl kwa">function</span><span class="hl std">(</span><span class="hl kwc">toClust</span><span class="hl std">,</span><span class="hl kwc">print</span><span class="hl std">=</span><span class="hl num">TRUE</span><span class="hl std">,</span><span class="hl kwc">scale</span><span class="hl std">=</span><span class="hl num">TRUE</span><span class="hl std">,</span><span class="hl kwc">maxClusts</span><span class="hl std">=</span><span class="hl num">15</span><span class="hl std">,</span><span class="hl kwc">seed</span><span class="hl std">=</span><span class="hl num">12345</span><span class="hl std">,</span><span class="hl kwc">nstart</span><span class="hl std">=</span><span class="hl num">20</span><span class="hl std">,</span><span class="hl kwc">iter.max</span><span class="hl std">=</span><span class="hl num">100</span><span class="hl std">){</span>
+    <span class="hl kwa">if</span><span class="hl std">(scale){ toClust</span> <span class="hl kwb">=</span> <span class="hl kwd">scale</span><span class="hl std">(toClust);}</span>
+    <span class="hl kwd">set.seed</span><span class="hl std">(seed);</span>
+    <span class="hl std">wss</span> <span class="hl kwb">&lt;-</span> <span class="hl std">(</span><span class="hl kwd">nrow</span><span class="hl std">(toClust)</span><span class="hl opt">-</span><span class="hl num">1</span><span class="hl std">)</span><span class="hl opt">*</span><span class="hl kwd">sum</span><span class="hl std">(</span><span class="hl kwd">apply</span><span class="hl std">(toClust,</span><span class="hl num">2</span><span class="hl std">,var))</span>
+    <span class="hl kwa">for</span> <span class="hl std">(i</span> <span class="hl kwa">in</span> <span class="hl num">2</span><span class="hl opt">:</span><span class="hl std">maxClusts) wss[i]</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">sum</span><span class="hl std">(</span><span class="hl kwd">kmeans</span><span class="hl std">(toClust,</span><span class="hl kwc">centers</span><span class="hl std">=i,</span><span class="hl kwc">nstart</span><span class="hl std">=nstart,</span><span class="hl kwc">iter.max</span><span class="hl std">=iter.max)</span><span class="hl opt">$</span><span class="hl std">withinss)</span>
+    <span class="hl std">gpw</span> <span class="hl kwb">=</span> <span class="hl kwd">fviz_nbclust</span><span class="hl std">(toClust,kmeans,</span><span class="hl kwc">method</span><span class="hl std">=</span><span class="hl str">&quot;wss&quot;</span><span class="hl std">,</span><span class="hl kwc">iter.max</span><span class="hl std">=iter.max,</span><span class="hl kwc">nstart</span><span class="hl std">=nstart,</span><span class="hl kwc">k.max</span><span class="hl std">=maxClusts)</span>
+    <span class="hl std">pm1</span> <span class="hl kwb">=</span> <span class="hl kwd">pamk</span><span class="hl std">(toClust,</span><span class="hl kwc">scaling</span><span class="hl std">=</span><span class="hl num">TRUE</span><span class="hl std">)</span>
+    <span class="hl std">gps</span> <span class="hl kwb">=</span> <span class="hl kwd">fviz_nbclust</span><span class="hl std">(toClust,kmeans,</span><span class="hl kwc">method</span><span class="hl std">=</span><span class="hl str">&quot;silhouette&quot;</span><span class="hl std">,</span><span class="hl kwc">iter.max</span><span class="hl std">=iter.max,</span><span class="hl kwc">nstart</span><span class="hl std">=nstart,</span><span class="hl kwc">k.max</span><span class="hl std">=maxClusts)</span>
+    <span class="hl kwa">if</span><span class="hl std">(print){</span>
+        <span class="hl kwd">grid.arrange</span><span class="hl std">(gpw,gps,</span> <span class="hl kwc">nrow</span> <span class="hl std">=</span> <span class="hl num">1</span><span class="hl std">)</span>
+    <span class="hl std">}</span>
+    <span class="hl kwd">list</span><span class="hl std">(</span><span class="hl kwc">wss</span><span class="hl std">=wss,</span><span class="hl kwc">pm1</span><span class="hl std">=pm1</span><span class="hl opt">$</span><span class="hl std">nc,</span><span class="hl kwc">gpw</span><span class="hl std">=gpw,</span><span class="hl kwc">gps</span><span class="hl std">=gps)</span>
+<span class="hl std">}</span>
+
+<span class="hl std">runClusts</span> <span class="hl kwb">=</span> <span class="hl kwa">function</span><span class="hl std">(</span><span class="hl kwc">toClust</span><span class="hl std">,</span><span class="hl kwc">nClusts</span><span class="hl std">,</span><span class="hl kwc">print</span><span class="hl std">=</span><span class="hl num">TRUE</span><span class="hl std">,</span><span class="hl kwc">maxClusts</span><span class="hl std">=</span><span class="hl num">15</span><span class="hl std">,</span><span class="hl kwc">seed</span><span class="hl std">=</span><span class="hl num">12345</span><span class="hl std">,</span><span class="hl kwc">nstart</span><span class="hl std">=</span><span class="hl num">20</span><span class="hl std">,</span><span class="hl kwc">iter.max</span><span class="hl std">=</span><span class="hl num">100</span><span class="hl std">){</span>
+    <span class="hl kwa">if</span><span class="hl std">(</span><span class="hl kwd">length</span><span class="hl std">(nClusts)</span><span class="hl opt">&gt;</span><span class="hl num">4</span><span class="hl std">){</span>
+        <span class="hl kwd">warning</span><span class="hl std">(</span><span class="hl str">&quot;Using only first 4 elements of nClusts.&quot;</span><span class="hl std">)</span>
+    <span class="hl std">}</span>
+    <span class="hl std">kms</span><span class="hl kwb">=</span><span class="hl kwd">list</span><span class="hl std">(); ps</span><span class="hl kwb">=</span><span class="hl kwd">list</span><span class="hl std">();</span>
+    <span class="hl kwa">for</span><span class="hl std">(i</span> <span class="hl kwa">in</span> <span class="hl num">1</span><span class="hl opt">:</span><span class="hl kwd">length</span><span class="hl std">(nClusts)){</span>
+        <span class="hl std">kms[[i]]</span> <span class="hl kwb">=</span> <span class="hl kwd">kmeans</span><span class="hl std">(toClust,nClusts[i],</span><span class="hl kwc">iter.max</span> <span class="hl std">= iter.max,</span> <span class="hl kwc">nstart</span><span class="hl std">=nstart)</span>
+        <span class="hl std">ps[[i]]</span> <span class="hl kwb">=</span> <span class="hl kwd">fviz_cluster</span><span class="hl std">(kms[[i]],</span> <span class="hl kwc">geom</span> <span class="hl std">=</span> <span class="hl str">&quot;point&quot;</span><span class="hl std">,</span> <span class="hl kwc">data</span> <span class="hl std">= toClust)</span> <span class="hl opt">+</span> <span class="hl kwd">ggtitle</span><span class="hl std">(</span><span class="hl kwd">paste</span><span class="hl std">(</span><span class="hl str">&quot;k =&quot;</span><span class="hl std">,nClusts[i]))</span>
+
+    <span class="hl std">}</span>
+    <span class="hl kwd">library</span><span class="hl std">(gridExtra)</span>
+    <span class="hl kwa">if</span><span class="hl std">(print){</span>
+        <span class="hl std">tmp</span> <span class="hl kwb">=</span> <span class="hl kwd">marrangeGrob</span><span class="hl std">(ps,</span> <span class="hl kwc">nrow</span> <span class="hl std">=</span> <span class="hl num">2</span><span class="hl std">,</span><span class="hl kwc">ncol</span><span class="hl std">=</span><span class="hl num">2</span><span class="hl std">)</span>
+        <span class="hl kwd">print</span><span class="hl std">(tmp)</span>
+    <span class="hl std">}</span>
+    <span class="hl kwd">list</span><span class="hl std">(</span><span class="hl kwc">kms</span><span class="hl std">=kms,</span><span class="hl kwc">ps</span><span class="hl std">=ps)</span>
+<span class="hl std">}</span>
+
+<span class="hl std">plotClust</span> <span class="hl kwb">=</span> <span class="hl kwa">function</span><span class="hl std">(</span><span class="hl kwc">km</span><span class="hl std">,</span><span class="hl kwc">toClust</span><span class="hl std">,</span><span class="hl kwc">discPlot</span><span class="hl std">=</span><span class="hl num">FALSE</span><span class="hl std">){</span>
+    <span class="hl std">nc</span> <span class="hl kwb">=</span> <span class="hl kwd">length</span><span class="hl std">(km</span><span class="hl opt">$</span><span class="hl std">size)</span>
+    <span class="hl kwa">if</span><span class="hl std">(discPlot){</span><span class="hl kwd">par</span><span class="hl std">(</span><span class="hl kwc">mfrow</span><span class="hl std">=</span><span class="hl kwd">c</span><span class="hl std">(</span><span class="hl num">2</span><span class="hl std">,</span><span class="hl num">2</span><span class="hl std">))}</span>
+    <span class="hl kwa">else</span> <span class="hl std">{</span><span class="hl kwd">par</span><span class="hl std">(</span><span class="hl kwc">mfrow</span><span class="hl std">=</span><span class="hl kwd">c</span><span class="hl std">(</span><span class="hl num">3</span><span class="hl std">,</span><span class="hl num">1</span><span class="hl std">))}</span>
+    <span class="hl std">percsize</span> <span class="hl kwb">=</span> <span class="hl kwd">paste</span><span class="hl std">(</span><span class="hl num">1</span><span class="hl opt">:</span><span class="hl std">nc,</span><span class="hl str">&quot; = &quot;</span><span class="hl std">,</span><span class="hl kwd">format</span><span class="hl std">(km</span><span class="hl opt">$</span><span class="hl std">size</span><span class="hl opt">/</span><span class="hl kwd">sum</span><span class="hl std">(km</span><span class="hl opt">$</span><span class="hl std">size)</span><span class="hl opt">*</span><span class="hl num">100</span><span class="hl std">,</span><span class="hl kwc">digits</span><span class="hl std">=</span><span class="hl num">2</span><span class="hl std">),</span><span class="hl str">&quot;%&quot;</span><span class="hl std">,</span><span class="hl kwc">sep</span><span class="hl std">=</span><span class="hl str">&quot;&quot;</span><span class="hl std">)</span>
+    <span class="hl kwd">pie</span><span class="hl std">(km</span><span class="hl opt">$</span><span class="hl std">size,</span><span class="hl kwc">labels</span><span class="hl std">=percsize,</span><span class="hl kwc">col</span><span class="hl std">=</span><span class="hl num">1</span><span class="hl opt">:</span><span class="hl std">nc)</span>
+
+    <span class="hl kwd">clusplot</span><span class="hl std">(toClust, km</span><span class="hl opt">$</span><span class="hl std">cluster,</span> <span class="hl kwc">color</span><span class="hl std">=</span><span class="hl num">TRUE</span><span class="hl std">,</span> <span class="hl kwc">shade</span><span class="hl std">=</span><span class="hl num">TRUE</span><span class="hl std">,</span>
+             <span class="hl kwc">labels</span><span class="hl std">=</span><span class="hl num">2</span><span class="hl std">,</span> <span class="hl kwc">lines</span><span class="hl std">=</span><span class="hl num">0</span><span class="hl std">,</span><span class="hl kwc">col.clus</span><span class="hl std">=</span><span class="hl num">1</span><span class="hl opt">:</span><span class="hl std">nc);</span> <span class="hl com">#plot clusters against principal components</span>
+
+    <span class="hl kwa">if</span><span class="hl std">(discPlot){</span>
+        <span class="hl kwd">plotcluster</span><span class="hl std">(toClust, km</span><span class="hl opt">$</span><span class="hl std">cluster,</span><span class="hl kwc">col</span><span class="hl std">=km</span><span class="hl opt">$</span><span class="hl std">cluster);</span> <span class="hl com">#plot against discriminant functions ()</span>
+    <span class="hl std">}</span>
+    <span class="hl std">rng</span> <span class="hl kwb">=</span> <span class="hl kwd">range</span><span class="hl std">(km</span><span class="hl opt">$</span><span class="hl std">centers)</span>
+    <span class="hl std">dist</span> <span class="hl kwb">=</span> <span class="hl std">rng[</span><span class="hl num">2</span><span class="hl std">]</span><span class="hl opt">-</span><span class="hl std">rng[</span><span class="hl num">1</span><span class="hl std">]</span>
+    <span class="hl std">locs</span> <span class="hl kwb">=</span> <span class="hl std">km</span><span class="hl opt">$</span><span class="hl std">centers</span><span class="hl opt">+</span><span class="hl num">.05</span><span class="hl opt">*</span><span class="hl std">dist</span><span class="hl opt">*</span><span class="hl kwd">ifelse</span><span class="hl std">(km</span><span class="hl opt">$</span><span class="hl std">centers</span><span class="hl opt">&gt;</span><span class="hl num">0</span><span class="hl std">,</span><span class="hl num">1</span><span class="hl std">,</span><span class="hl opt">-</span><span class="hl num">1</span><span class="hl std">)</span>
+    <span class="hl std">bm</span> <span class="hl kwb">=</span> <span class="hl kwd">barplot</span><span class="hl std">(km</span><span class="hl opt">$</span><span class="hl std">centers,</span><span class="hl kwc">beside</span><span class="hl std">=</span><span class="hl num">TRUE</span><span class="hl std">,</span><span class="hl kwc">col</span><span class="hl std">=</span><span class="hl num">1</span><span class="hl opt">:</span><span class="hl std">nc,</span><span class="hl kwc">main</span><span class="hl std">=</span><span class="hl str">&quot;Cluster Means&quot;</span><span class="hl std">,</span><span class="hl kwc">ylim</span><span class="hl std">=rng</span><span class="hl opt">+</span><span class="hl std">dist</span><span class="hl opt">*</span><span class="hl kwd">c</span><span class="hl std">(</span><span class="hl opt">-</span><span class="hl num">.1</span><span class="hl std">,</span><span class="hl num">.1</span><span class="hl std">))</span>
+    <span class="hl kwd">text</span><span class="hl std">(bm,locs,</span><span class="hl kwd">formatC</span><span class="hl std">(km</span><span class="hl opt">$</span><span class="hl std">centers,</span><span class="hl kwc">format</span><span class="hl std">=</span><span class="hl str">&quot;f&quot;</span><span class="hl std">,</span><span class="hl kwc">digits</span><span class="hl std">=</span><span class="hl num">1</span><span class="hl std">))</span>
+<span class="hl std">}</span>
+
+<span class="hl std">checks</span> <span class="hl kwb">=</span> <span class="hl kwd">clustTest</span><span class="hl std">(util,</span><span class="hl kwc">print</span><span class="hl std">=</span><span class="hl num">TRUE</span><span class="hl std">,</span><span class="hl kwc">scale</span><span class="hl std">=</span><span class="hl num">TRUE</span><span class="hl std">,</span><span class="hl kwc">maxClusts</span><span class="hl std">=</span><span class="hl num">15</span><span class="hl std">,</span><span class="hl kwc">seed</span><span class="hl std">=</span><span class="hl num">12345</span><span class="hl std">,</span><span class="hl kwc">nstart</span><span class="hl std">=</span><span class="hl num">20</span><span class="hl std">,</span><span class="hl kwc">iter.max</span><span class="hl std">=</span><span class="hl num">100</span><span class="hl std">)</span>
+</pre></div>
+</div><div class="rimage default"><img src="figure/unnamed-chunk-4-1.png" title="plot of chunk unnamed-chunk-4" alt="plot of chunk unnamed-chunk-4" class="plot" /></div><div class="rcode">
+<div class="source"><pre class="knitr r"><span class="hl std">clusts</span> <span class="hl kwb">=</span> <span class="hl kwd">runClusts</span><span class="hl std">(util,</span><span class="hl num">3</span><span class="hl std">,</span><span class="hl kwc">print</span><span class="hl std">=</span><span class="hl num">TRUE</span><span class="hl std">,</span><span class="hl kwc">maxClusts</span><span class="hl std">=</span><span class="hl num">15</span><span class="hl std">,</span><span class="hl kwc">seed</span><span class="hl std">=</span><span class="hl num">12345</span><span class="hl std">,</span><span class="hl kwc">nstart</span><span class="hl std">=</span><span class="hl num">20</span><span class="hl std">,</span><span class="hl kwc">iter.max</span><span class="hl std">=</span><span class="hl num">100</span><span class="hl std">)</span>
+</pre></div>
+</div><div class="rimage default"><img src="figure/unnamed-chunk-4-2.png" title="plot of chunk unnamed-chunk-4" alt="plot of chunk unnamed-chunk-4" class="plot" /></div><div class="rcode">
+<div class="source"><pre class="knitr r"><span class="hl kwd">plotClust</span><span class="hl std">(clusts[[</span><span class="hl num">1</span><span class="hl std">]][[</span><span class="hl num">1</span><span class="hl std">]],util)</span>
+</pre></div>
+</div><div class="rimage default"><img src="figure/unnamed-chunk-4-3.png" title="plot of chunk unnamed-chunk-4" alt="plot of chunk unnamed-chunk-4" class="plot" /></div></div>
+
+<div class="chunk" id="unnamed-chunk-5"><div class="rcode"><div class="source"><pre class="knitr r"><span class="hl com">##predicted ratings for missing profiles (complete ratings)</span>
+<span class="hl std">fini</span> <span class="hl kwb">=</span> <span class="hl std">conjointData</span>
+<span class="hl kwa">for</span> <span class="hl std">(i</span> <span class="hl kwa">in</span> <span class="hl std">(</span><span class="hl num">1</span><span class="hl opt">:</span><span class="hl num">3200</span><span class="hl std">)){</span>
+    <span class="hl kwa">if</span> <span class="hl std">(</span><span class="hl kwd">is.na</span><span class="hl std">(conjointData[i,</span><span class="hl num">3</span><span class="hl std">])</span> <span class="hl opt">==</span> <span class="hl num">TRUE</span><span class="hl std">){</span>
+        <span class="hl std">fini[i,</span><span class="hl num">3</span><span class="hl std">]</span> <span class="hl kwb">=</span> <span class="hl std">util[conjointData[i,</span><span class="hl num">1</span><span class="hl std">],</span><span class="hl num">1</span><span class="hl std">]</span><span class="hl opt">+</span><span class="hl std">util[conjointData[i,</span><span class="hl num">1</span><span class="hl std">],</span><span class="hl num">2</span><span class="hl std">]</span><span class="hl opt">*</span><span class="hl std">conjointData[i,</span><span class="hl num">4</span><span class="hl std">]</span><span class="hl opt">+</span><span class="hl std">util[conjointData[i,</span><span class="hl num">1</span><span class="hl std">],</span><span class="hl num">3</span><span class="hl std">]</span><span class="hl opt">*</span><span class="hl std">conjointData[i,</span><span class="hl num">5</span><span class="hl std">]</span><span class="hl opt">+</span><span class="hl std">util[conjointData[i,</span><span class="hl num">1</span><span class="hl std">],</span><span class="hl num">4</span><span class="hl std">]</span><span class="hl opt">*</span><span class="hl std">conjointData[i,</span><span class="hl num">6</span><span class="hl std">]</span><span class="hl opt">+</span><span class="hl std">util[conjointData[i,</span><span class="hl num">1</span><span class="hl std">],</span><span class="hl num">5</span><span class="hl std">]</span><span class="hl opt">*</span><span class="hl std">conjointData[i,</span><span class="hl num">7</span><span class="hl std">]</span>
+    <span class="hl std">}</span>
+<span class="hl std">}</span>
+
+
+<span class="hl com">## part utilities by gender and age</span>
+<span class="hl std">df2</span> <span class="hl kwb">=</span> <span class="hl kwd">merge</span><span class="hl std">(df1,respondentData,</span><span class="hl kwc">by</span> <span class="hl std">=</span> <span class="hl str">'ID'</span><span class="hl std">)</span>
+<span class="hl std">lmfemale</span> <span class="hl kwb">=</span> <span class="hl kwd">lm</span><span class="hl std">(ratings</span><span class="hl opt">~</span><span class="hl kwd">factor</span><span class="hl std">(price)</span><span class="hl opt">+</span><span class="hl kwd">factor</span><span class="hl std">(size)</span><span class="hl opt">+</span><span class="hl kwd">factor</span><span class="hl std">(motion)</span><span class="hl opt">+</span><span class="hl kwd">factor</span><span class="hl std">(style),</span> <span class="hl kwc">data</span> <span class="hl std">= df2[df2</span><span class="hl opt">$</span><span class="hl std">gender</span> <span class="hl opt">==</span> <span class="hl num">1</span><span class="hl std">,])</span>
+<span class="hl kwd">summary</span><span class="hl std">(lmfemale)</span>
+</pre></div>
+<div class="output"><pre class="knitr r">## 
+## Call:
+## lm(formula = ratings ~ factor(price) + factor(size) + factor(motion) + 
+##     factor(style), data = df2[df2$gender == 1, ])
+## 
+## Residuals:
+##     Min      1Q  Median      3Q     Max 
+## -45.675 -13.646   2.716  12.948  36.175 
+## 
+## Coefficients:
+##                 Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)      40.8701     1.0580  38.630  &lt; 2e-16 ***
+## factor(price)1   13.5086     0.9914  13.626  &lt; 2e-16 ***
+## factor(size)1     7.7555     0.9492   8.171 7.24e-16 ***
+## factor(motion)1   2.9068     0.9492   3.062  0.00224 ** 
+## factor(style)1    3.7270     0.9492   3.927 9.07e-05 ***
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## Residual standard error: 16.82 on 1291 degrees of freedom
+## Multiple R-squared:  0.1902,	Adjusted R-squared:  0.1877 
+## F-statistic: 75.82 on 4 and 1291 DF,  p-value: &lt; 2.2e-16
+</pre></div>
+<div class="source"><pre class="knitr r"><span class="hl std">lmmale</span> <span class="hl kwb">=</span> <span class="hl kwd">lm</span><span class="hl std">(ratings</span><span class="hl opt">~</span><span class="hl kwd">factor</span><span class="hl std">(price)</span><span class="hl opt">+</span><span class="hl kwd">factor</span><span class="hl std">(size)</span><span class="hl opt">+</span><span class="hl kwd">factor</span><span class="hl std">(motion)</span><span class="hl opt">+</span><span class="hl kwd">factor</span><span class="hl std">(style),</span> <span class="hl kwc">data</span> <span class="hl std">= df2[df2</span><span class="hl opt">$</span><span class="hl std">gender</span> <span class="hl opt">==</span><span class="hl num">0</span><span class="hl std">,])</span>
+<span class="hl kwd">summary</span><span class="hl std">(lmmale)</span>
+</pre></div>
+<div class="output"><pre class="knitr r">## 
+## Call:
+## lm(formula = ratings ~ factor(price) + factor(size) + factor(motion) + 
+##     factor(style), data = df2[df2$gender == 0, ])
+## 
+## Residuals:
+##     Min      1Q  Median      3Q     Max 
+## -33.917 -10.607  -2.351   7.762  47.017 
+## 
+## Coefficients:
+##                 Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)      36.5668     0.9821  37.233  &lt; 2e-16 ***
+## factor(price)1   16.8573     0.9203  18.318  &lt; 2e-16 ***
+## factor(size)1     3.8509     0.8811   4.371 1.36e-05 ***
+## factor(motion)1  -0.7601     0.8811  -0.863   0.3885    
+## factor(style)1   -1.8895     0.8811  -2.145   0.0322 *  
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## Residual standard error: 14.41 on 1099 degrees of freedom
+## Multiple R-squared:  0.2862,	Adjusted R-squared:  0.2836 
+## F-statistic: 110.2 on 4 and 1099 DF,  p-value: &lt; 2.2e-16
+</pre></div>
+<div class="source"><pre class="knitr r"><span class="hl std">lmage2</span><span class="hl kwb">=</span> <span class="hl kwd">lm</span><span class="hl std">(ratings</span><span class="hl opt">~</span><span class="hl kwd">factor</span><span class="hl std">(price)</span><span class="hl opt">+</span><span class="hl kwd">factor</span><span class="hl std">(size)</span><span class="hl opt">+</span><span class="hl kwd">factor</span><span class="hl std">(motion)</span><span class="hl opt">+</span><span class="hl kwd">factor</span><span class="hl std">(style),</span> <span class="hl kwc">data</span> <span class="hl std">= df2[df2</span><span class="hl opt">$</span><span class="hl std">age</span> <span class="hl opt">==</span><span class="hl num">0</span><span class="hl std">, ])</span>
+<span class="hl kwd">summary</span><span class="hl std">(lmage2)</span>
+</pre></div>
+<div class="output"><pre class="knitr r">## 
+## Call:
+## lm(formula = ratings ~ factor(price) + factor(size) + factor(motion) + 
+##     factor(style), data = df2[df2$age == 0, ])
+## 
+## Residuals:
+##     Min      1Q  Median      3Q     Max 
+## -43.528 -11.312  -0.598   9.857  43.040 
+## 
+## Coefficients:
+##                 Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)      39.5462     1.0164  38.909  &lt; 2e-16 ***
+## factor(price)1   14.4133     0.9524  15.134  &lt; 2e-16 ***
+## factor(size)1     3.8532     0.9118   4.226 2.57e-05 ***
+## factor(motion)1   2.7950     0.9118   3.065  0.00222 ** 
+## factor(style)1    1.1867     0.9118   1.301  0.19338    
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## Residual standard error: 15.47 on 1183 degrees of freedom
+## Multiple R-squared:  0.1912,	Adjusted R-squared:  0.1884 
+## F-statistic:  69.9 on 4 and 1183 DF,  p-value: &lt; 2.2e-16
+</pre></div>
+<div class="source"><pre class="knitr r"><span class="hl std">lmage3</span> <span class="hl kwb">=</span> <span class="hl kwd">lm</span><span class="hl std">(ratings</span><span class="hl opt">~</span><span class="hl kwd">factor</span><span class="hl std">(price)</span><span class="hl opt">+</span><span class="hl kwd">factor</span><span class="hl std">(size)</span><span class="hl opt">+</span><span class="hl kwd">factor</span><span class="hl std">(motion)</span><span class="hl opt">+</span><span class="hl kwd">factor</span><span class="hl std">(style),</span> <span class="hl kwc">data</span> <span class="hl std">= df2[df2</span><span class="hl opt">$</span><span class="hl std">age</span> <span class="hl opt">==</span><span class="hl num">1</span><span class="hl std">, ])</span>
+<span class="hl kwd">summary</span><span class="hl std">(lmage3)</span>
+</pre></div>
+<div class="output"><pre class="knitr r">## 
+## Call:
+## lm(formula = ratings ~ factor(price) + factor(size) + factor(motion) + 
+##     factor(style), data = df2[df2$age == 1, ])
+## 
+## Residuals:
+##     Min      1Q  Median      3Q     Max 
+## -37.465 -14.368  -2.484  15.008  44.386 
+## 
+## Coefficients:
+##                 Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)      38.2480     1.1400  33.549  &lt; 2e-16 ***
+## factor(price)1   15.6721     1.0683  14.671  &lt; 2e-16 ***
+## factor(size)1     8.0239     1.0228   7.845 9.47e-15 ***
+## factor(motion)1  -0.3238     1.0228  -0.317    0.752    
+## factor(style)1    1.1010     1.0228   1.076    0.282    
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## Residual standard error: 17.53 on 1207 degrees of freedom
+## Multiple R-squared:  0.2185,	Adjusted R-squared:  0.2159 
+## F-statistic: 84.37 on 4 and 1207 DF,  p-value: &lt; 2.2e-16
+</pre></div>
+<div class="source"><pre class="knitr r"><span class="hl com">##Test</span>
+<span class="hl kwd">summary</span><span class="hl std">(</span><span class="hl kwd">lm</span><span class="hl std">(ratings</span><span class="hl opt">~</span><span class="hl std">(</span><span class="hl kwd">factor</span><span class="hl std">(price)</span><span class="hl opt">+</span><span class="hl kwd">factor</span><span class="hl std">(size)</span><span class="hl opt">+</span><span class="hl kwd">factor</span><span class="hl std">(motion)</span><span class="hl opt">+</span><span class="hl kwd">factor</span><span class="hl std">(style))</span><span class="hl opt">*</span><span class="hl kwd">factor</span><span class="hl std">(age),</span> <span class="hl kwc">data</span> <span class="hl std">= df2))</span>
+</pre></div>
+<div class="output"><pre class="knitr r">## 
+## Call:
+## lm(formula = ratings ~ (factor(price) + factor(size) + factor(motion) + 
+##     factor(style)) * factor(age), data = df2)
+## 
+## Residuals:
+##     Min      1Q  Median      3Q     Max 
+## -43.528 -12.886  -1.307  12.388  44.386 
+## 
+## Coefficients:
+##                              Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)                   39.5462     1.0867  36.390  &lt; 2e-16 ***
+## factor(price)1                14.4133     1.0183  14.154  &lt; 2e-16 ***
+## factor(size)1                  3.8532     0.9749   3.952 7.97e-05 ***
+## factor(motion)1                2.7950     0.9749   2.867  0.00418 ** 
+## factor(style)1                 1.1867     0.9749   1.217  0.22367    
+## factor(age)1                  -1.2982     1.5292  -0.849  0.39601    
+## factor(price)1:factor(age)1    1.2588     1.4330   0.878  0.37977    
+## factor(size)1:factor(age)1     4.1708     1.3720   3.040  0.00239 ** 
+## factor(motion)1:factor(age)1  -3.1188     1.3720  -2.273  0.02310 *  
+## factor(style)1:factor(age)1   -0.0857     1.3720  -0.062  0.95020    
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## Residual standard error: 16.55 on 2390 degrees of freedom
+## Multiple R-squared:  0.2069,	Adjusted R-squared:  0.204 
+## F-statistic:  69.3 on 9 and 2390 DF,  p-value: &lt; 2.2e-16
+</pre></div>
+<div class="source"><pre class="knitr r"><span class="hl kwd">summary</span><span class="hl std">(</span><span class="hl kwd">lm</span><span class="hl std">(ratings</span><span class="hl opt">~</span><span class="hl std">(</span><span class="hl kwd">factor</span><span class="hl std">(price)</span><span class="hl opt">+</span><span class="hl kwd">factor</span><span class="hl std">(size)</span><span class="hl opt">+</span><span class="hl kwd">factor</span><span class="hl std">(motion)</span><span class="hl opt">+</span><span class="hl kwd">factor</span><span class="hl std">(style))</span><span class="hl opt">*</span><span class="hl kwd">factor</span><span class="hl std">(gender),</span> <span class="hl kwc">data</span> <span class="hl std">= df2))</span>
+</pre></div>
+<div class="output"><pre class="knitr r">## 
+## Call:
+## lm(formula = ratings ~ (factor(price) + factor(size) + factor(motion) + 
+##     factor(style)) * factor(gender), data = df2)
+## 
+## Residuals:
+##     Min      1Q  Median      3Q     Max 
+## -45.675 -11.838  -0.398  11.456  47.017 
+## 
+## Coefficients:
+##                                 Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)                      36.5668     1.0739  34.050  &lt; 2e-16 ***
+## factor(price)1                   16.8573     1.0063  16.752  &lt; 2e-16 ***
+## factor(size)1                     3.8509     0.9635   3.997 6.61e-05 ***
+## factor(motion)1                  -0.7601     0.9635  -0.789  0.43022    
+## factor(style)1                   -1.8895     0.9635  -1.961  0.04997 *  
+## factor(gender)1                   4.3032     1.4614   2.945  0.00327 ** 
+## factor(price)1:factor(gender)1   -3.3488     1.3694  -2.445  0.01454 *  
+## factor(size)1:factor(gender)1     3.9046     1.3111   2.978  0.00293 ** 
+## factor(motion)1:factor(gender)1   3.6669     1.3111   2.797  0.00520 ** 
+## factor(style)1:factor(gender)1    5.6165     1.3111   4.284 1.91e-05 ***
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## Residual standard error: 15.76 on 2390 degrees of freedom
+## Multiple R-squared:  0.2803,	Adjusted R-squared:  0.2776 
+## F-statistic: 103.4 on 9 and 2390 DF,  p-value: &lt; 2.2e-16
+</pre></div>
+<div class="source"><pre class="knitr r"><span class="hl com">##customer segmentation</span>
+<span class="hl std">group</span> <span class="hl kwb">=</span> <span class="hl std">clusts</span><span class="hl opt">$</span><span class="hl std">kms[[</span><span class="hl num">1</span><span class="hl std">]]</span><span class="hl opt">$</span><span class="hl std">cluster</span>
+<span class="hl std">gro</span> <span class="hl kwb">=</span> <span class="hl kwd">c</span><span class="hl std">()</span>
+<span class="hl kwa">for</span> <span class="hl std">(i</span> <span class="hl kwa">in</span> <span class="hl std">group) {</span>
+    <span class="hl std">gro</span> <span class="hl kwb">=</span> <span class="hl kwd">c</span><span class="hl std">(gro,</span><span class="hl kwd">rep</span><span class="hl std">(i,</span> <span class="hl kwc">times</span><span class="hl std">=</span><span class="hl num">16</span><span class="hl std">))</span>
+<span class="hl std">}</span>
+<span class="hl std">fini</span><span class="hl opt">$</span><span class="hl std">group</span> <span class="hl kwb">=</span> <span class="hl std">gro</span>
+</pre></div>
+</div></div>
+
+<div class="chunk" id="unnamed-chunk-6"><div class="rcode"><div class="source"><pre class="knitr r"><span class="hl com">##market simulation</span>
+<span class="hl std">market</span> <span class="hl kwb">=</span> <span class="hl kwd">as.data.frame</span><span class="hl std">(</span><span class="hl kwd">array</span><span class="hl std">(</span><span class="hl kwc">dim</span><span class="hl std">=</span><span class="hl kwd">c</span><span class="hl std">(</span><span class="hl num">1</span><span class="hl std">,</span><span class="hl num">16</span><span class="hl std">)))</span>
+<span class="hl kwd">colnames</span><span class="hl std">(market)</span> <span class="hl kwb">=</span> <span class="hl kwd">c</span><span class="hl std">(</span><span class="hl num">1</span><span class="hl opt">:</span><span class="hl num">16</span><span class="hl std">)</span>
+<span class="hl kwa">for</span> <span class="hl std">(i</span> <span class="hl kwa">in</span> <span class="hl std">(</span><span class="hl num">1</span><span class="hl opt">:</span><span class="hl num">200</span><span class="hl std">)){</span>
+    <span class="hl std">customer</span> <span class="hl kwb">=</span> <span class="hl std">fini[fini</span><span class="hl opt">$</span><span class="hl std">ID</span> <span class="hl opt">==</span> <span class="hl std">i, ]</span>
+    <span class="hl std">market[i, ]</span> <span class="hl kwb">=</span> <span class="hl kwd">rank</span><span class="hl std">(customer</span><span class="hl opt">$</span><span class="hl std">ratings)</span>
+<span class="hl std">}</span>
+
+
+<span class="hl std">simFCDecisions</span> <span class="hl kwb">=</span> <span class="hl kwa">function</span><span class="hl std">(</span><span class="hl kwc">scen</span><span class="hl std">,</span><span class="hl kwc">data</span><span class="hl std">,</span><span class="hl kwc">ascend</span><span class="hl std">=</span><span class="hl num">FALSE</span><span class="hl std">){</span>
+    <span class="hl std">inmkt</span> <span class="hl kwb">=</span> <span class="hl std">data[,scen]</span> <span class="hl com">#construct the subsetted matrix of options</span>
+    <span class="hl kwa">if</span><span class="hl std">(ascend){</span> <span class="hl com">#if ranks 1 is best </span>
+        <span class="hl std">bestOpts</span> <span class="hl kwb">=</span> <span class="hl kwd">apply</span><span class="hl std">(inmkt,</span><span class="hl num">1</span><span class="hl std">,which.min)</span>  <span class="hl com">#identify which option is best = min</span>
+    <span class="hl std">}</span> <span class="hl kwa">else</span> <span class="hl std">{</span> <span class="hl com">#else the best rank is the largest number</span>
+        <span class="hl std">bestOpts</span> <span class="hl kwb">=</span> <span class="hl kwd">apply</span><span class="hl std">(inmkt,</span><span class="hl num">1</span><span class="hl std">,which.max)</span> <span class="hl com">#identify which option is best = max</span>
+    <span class="hl std">}</span>
+    <span class="hl std">ret</span> <span class="hl kwb">=</span> <span class="hl kwd">as.data.frame</span><span class="hl std">(</span><span class="hl kwd">model.matrix</span><span class="hl std">(</span><span class="hl opt">~</span><span class="hl num">0</span><span class="hl opt">+</span><span class="hl kwd">as.factor</span><span class="hl std">(bestOpts)))</span> <span class="hl com">#fill to set of options marked 0 or 1</span>
+    <span class="hl kwd">names</span><span class="hl std">(ret)</span> <span class="hl kwb">=</span> <span class="hl kwd">names</span><span class="hl std">(inmkt)</span>
+    <span class="hl std">ret</span>
+<span class="hl std">}</span>
+
+<span class="hl std">calcUnitShares</span> <span class="hl kwb">=</span> <span class="hl kwa">function</span><span class="hl std">(</span><span class="hl kwc">decisions</span><span class="hl std">){</span>
+    <span class="hl kwd">colSums</span><span class="hl std">(decisions)</span><span class="hl opt">/</span><span class="hl kwd">sum</span><span class="hl std">(decisions)</span> <span class="hl com">#assumes that total decisions is market size</span>
+<span class="hl std">}</span>
+
+<span class="hl std">simFCShares</span><span class="hl kwb">=</span><span class="hl kwa">function</span><span class="hl std">(</span><span class="hl kwc">scen</span><span class="hl std">,</span><span class="hl kwc">data</span><span class="hl std">,</span><span class="hl kwc">ascend</span><span class="hl std">=</span><span class="hl num">FALSE</span><span class="hl std">){</span>
+    <span class="hl std">decs</span> <span class="hl kwb">=</span> <span class="hl kwd">simFCDecisions</span><span class="hl std">(scen,data,ascend)</span> <span class="hl com">#determine decisions</span>
+    <span class="hl kwd">calcUnitShares</span><span class="hl std">(decs)</span> <span class="hl com">#calculate shares and return</span>
+<span class="hl std">}</span>
+
+<span class="hl std">simFCScenarios</span> <span class="hl kwb">=</span> <span class="hl kwa">function</span><span class="hl std">(</span><span class="hl kwc">scenarios</span><span class="hl std">,</span><span class="hl kwc">data</span><span class="hl std">,</span><span class="hl kwc">...</span><span class="hl std">){</span>
+    <span class="hl std">res</span> <span class="hl kwb">=</span> <span class="hl kwd">matrix</span><span class="hl std">(</span><span class="hl kwc">nrow</span><span class="hl std">=</span><span class="hl kwd">length</span><span class="hl std">(scenarios),</span><span class="hl kwc">ncol</span><span class="hl std">=</span><span class="hl kwd">length</span><span class="hl std">(data))</span> <span class="hl com">#sets everything to NA by default</span>
+    <span class="hl kwa">for</span><span class="hl std">(i</span> <span class="hl kwa">in</span> <span class="hl num">1</span><span class="hl opt">:</span><span class="hl kwd">length</span><span class="hl std">(scenarios)){</span> <span class="hl com">##loop over scenarios</span>
+        <span class="hl std">res[i, scenarios[[i]] ]</span> <span class="hl kwb">=</span> <span class="hl kwd">simFCShares</span><span class="hl std">(scenarios[[i]],data,...)</span><span class="hl com">##  calculate market shares and save to right columns in res for the scenario</span>
+    <span class="hl std">}</span>
+    <span class="hl std">res</span> <span class="hl kwb">=</span> <span class="hl kwd">as.data.frame</span><span class="hl std">(res);</span> <span class="hl kwd">names</span><span class="hl std">(res)</span> <span class="hl kwb">=</span> <span class="hl kwd">names</span><span class="hl std">(data)</span>
+    <span class="hl std">res</span> <span class="hl com">##return result table</span>
+<span class="hl std">}</span>
+
+
+<span class="hl std">scens</span> <span class="hl kwb">=</span> <span class="hl kwd">list</span><span class="hl std">()</span>
+<span class="hl std">scens[[</span><span class="hl num">1</span><span class="hl std">]]</span> <span class="hl kwb">=</span> <span class="hl kwd">c</span><span class="hl std">(</span><span class="hl num">4</span><span class="hl std">,</span><span class="hl num">8</span><span class="hl std">,</span><span class="hl num">16</span><span class="hl std">)</span>
+<span class="hl std">scens[[</span><span class="hl num">2</span><span class="hl std">]]</span> <span class="hl kwb">=</span> <span class="hl kwd">c</span><span class="hl std">(</span><span class="hl num">4</span><span class="hl std">,</span><span class="hl num">14</span><span class="hl std">,</span><span class="hl num">8</span><span class="hl std">)</span>
+<span class="hl std">scens[[</span><span class="hl num">3</span><span class="hl std">]]</span> <span class="hl kwb">=</span> <span class="hl kwd">c</span><span class="hl std">(</span><span class="hl num">14</span><span class="hl std">,</span><span class="hl num">16</span><span class="hl std">,</span><span class="hl num">8</span><span class="hl std">)</span>
+<span class="hl std">scens[[</span><span class="hl num">4</span><span class="hl std">]]</span> <span class="hl kwb">=</span> <span class="hl kwd">c</span><span class="hl std">(</span><span class="hl num">4</span><span class="hl std">,</span><span class="hl num">8</span><span class="hl std">,</span><span class="hl num">14</span><span class="hl std">,</span><span class="hl num">16</span><span class="hl std">)</span>
+<span class="hl std">scens[[</span><span class="hl num">5</span><span class="hl std">]]</span> <span class="hl kwb">=</span> <span class="hl kwd">c</span><span class="hl std">(</span><span class="hl num">3</span><span class="hl std">,</span><span class="hl num">7</span><span class="hl std">,</span><span class="hl num">15</span><span class="hl std">)</span>
+<span class="hl std">scens[[</span><span class="hl num">6</span><span class="hl std">]]</span> <span class="hl kwb">=</span> <span class="hl kwd">c</span><span class="hl std">(</span><span class="hl num">3</span><span class="hl std">,</span><span class="hl num">7</span><span class="hl std">,</span><span class="hl num">13</span><span class="hl std">)</span>
+<span class="hl std">scens[[</span><span class="hl num">7</span><span class="hl std">]]</span> <span class="hl kwb">=</span> <span class="hl kwd">c</span><span class="hl std">(</span><span class="hl num">7</span><span class="hl std">,</span><span class="hl num">13</span><span class="hl std">,</span><span class="hl num">15</span><span class="hl std">)</span>
+<span class="hl std">scens[[</span><span class="hl num">8</span><span class="hl std">]]</span> <span class="hl kwb">=</span> <span class="hl kwd">c</span><span class="hl std">(</span><span class="hl num">3</span><span class="hl std">,</span><span class="hl num">7</span><span class="hl std">,</span><span class="hl num">13</span><span class="hl std">,</span><span class="hl num">15</span><span class="hl std">)</span>
+<span class="hl std">scens[[</span><span class="hl num">9</span><span class="hl std">]]</span> <span class="hl kwb">=</span> <span class="hl kwd">c</span><span class="hl std">(</span><span class="hl num">5</span><span class="hl std">,</span><span class="hl num">7</span><span class="hl std">,</span><span class="hl num">13</span><span class="hl std">)</span>
+
+<span class="hl std">df100</span> <span class="hl kwb">=</span> <span class="hl kwd">simFCScenarios</span><span class="hl std">(scens,market[,</span><span class="hl num">1</span><span class="hl opt">:</span><span class="hl num">16</span><span class="hl std">])</span>
+<span class="hl std">df101</span> <span class="hl kwb">=</span> <span class="hl std">df100</span><span class="hl opt">*</span><span class="hl num">200</span>
+</pre></div>
+</div></div>
+
+
+</body>
+</html>
